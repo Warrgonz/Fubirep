@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fubiredip</title>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="Phoenixcoded" />
+    <!-- Favicon icon -->
+    <link rel="icon" href="~/images/fubi-logo.png" type="image/x-icon" />
+
+    <!-- vendor css -->
+    <link rel="stylesheet" href="~/css/style.css" />
+    <link href="~/dist/css/plugins/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/dist/css/plugins/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="~/dist/css/plugins/prism-coy.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/app.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.css" />
+    <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <!-- [ Pre-loader ] start -->
+    <div class="loader-bg">
+        <div class="loader-track">
+            <div class="loader-fill"></div>
+        </div>
+    </div>
+    <!-- [ Pre-loader ] End -->
+    <!-- [ navigation menu ] start -->
+    <nav class="pcoded-navbar" style="background-color: #1e1e1e">
+        <div class="navbar-wrapper">
+            <div class="navbar-content scroll-div">
+                <div class="">
+                    <div class="main-menu-header" style="background-color: #9aba99">
+                       <img class="img-radius"
+                             src="~/images/img-profile.jpg"
+                              alt="User-Profile-Image" />
+                        <div class="user-details" id="more-details">
+                            <!--Aquí va el nombre del viejo-->
+                            <span class="text-dark">Jose Pablo Solís Rodríguez</span>
+                            <!--Aquí va el rol-->
+                            <div class="text-dark">
+                                Administrador<ion-icon name="chevron-down-outline"></ion-icon>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse" id="nav-user-link">
+                        <ul class="list-unstyled nav-icons">
+                            <li class="list-group-item">
+                                <a href="user-profile.html"><ion-icon name="settings-outline"></ion-icon>Mi perfil</a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="auth-normal-sign-in.html"><ion-icon name="log-out-outline"></ion-icon>Cerrar sesión</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <ul class="nav pcoded-inner-navbar">
+                    <li class="nav-item pcoded-menu-caption">
+                        <label>Navigation</label>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("Index", "Dashboard")" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="home-outline"></ion-icon></span><span class="pcoded-mtext">Inicio</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("Index", "User")" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="person-outline"></ion-icon></span><span class="pcoded-mtext">Usuarios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="gift-outline"></ion-icon></span><span class="pcoded-mtext">Donaciones</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="people-outline"></ion-icon></span><span class="pcoded-mtext">Beneficiarios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="folder-open-outline"></ion-icon></span><span class="pcoded-mtext">Inventario</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="document-text-outline"></ion-icon></i></span><span class="pcoded-mtext">Préstamos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link">
+                            <span class="pcoded-micon"><ion-icon name="wallet-outline"></ion-icon></span><span class="pcoded-mtext">Ingresos</span>
+                        </a>
+                    </li>
+                   
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- [ navigation menu ] end -->
+    <!-- [ Header ] start -->
+    <header class="navbar pcoded-header navbar-expand-lg" style="background-color: #1e1e1e">
+        <div class="m-header">
+            <a href="#!" class="b-brand">
+                <img src="~/images/fubi-logo.png" alt="" class="fubi-icon"/>
+                <h1 class="text-light fubi-title">FUBIREDIP</h1>
+            </a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li>
+                    <a class="mobile-menu" id="mobile-collapse" href="#!"><span></span></a>
+                </li>
+            </ul>
+        </div>
+    </header>
+    <!-- [ Header ] end -->
+    <!-- [ Main Content ] start -->
+    <div class="pcoded-main-container">
+        @RenderBody()
+        <!-- [ Main Content ] end -->
+    </div>
+
+    <!-- Required Js -->
+    <script src="~/dist/js/vendor-all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="~/dist/js/pcoded.min.js"></script>
+    <script src="~/dist/js/uikit.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.js"></script>
+    <script src="https://kit.fontawesome.com/4ccaae5e72.js" crossorigin="anonymous"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
