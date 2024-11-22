@@ -1,0 +1,96 @@
+﻿@model fubi_client.Models.Beneficiario
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Beneficiarios.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/beneficiarios.css" />
+}
+
+<section class="p-3">
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <h2>Crear Nuevo Beneficiario</h2>
+    <div class="d-flex flex-column rounded-circle justify-content-center align-items-center">
+        <img id="profilePic" src="~/images/no-profile-pic-icon-27.webp" width="200px" alt="Profile picture overview" />
+        <p>Prevista imagen del perfil</p>
+    </div>
+
+    <form asp-action="CreateBeneficiario" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="cedula" class="form-control">
+
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <p class="text-danger">*@ViewBag.ErrorMessage</p>
+            }
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nombre Completo<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="beneficiario" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
+            <input type="email" asp-for="correo" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="telefono" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
+            <textarea asp-for="direccion" class="form-control"></textarea>
+        </div>
+        <div class="pt-3 form-group">
+            <label for="beneficiarioImage">Selecciona una imagen de perfil</label>
+            <input type="file" class="form-control-file" asp-for="ruta_imagen" id="beneficiarioImage" onchange="previewImage(event)">
+        </div>
+        <div class="pt-3">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Beneficiario">
+            <a href="@Url.Action("Index", "Beneficiarios")" class="btn btn-danger text-light btn-md">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<script>
+    // Función para previsualizar imagen
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const output = document.getElementById('profilePic');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    // Función para ocultar alertas
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
+    (() => {
+        let alert = document.getElementById('error-message');
+        if (alert != null) {
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })();
+</script>

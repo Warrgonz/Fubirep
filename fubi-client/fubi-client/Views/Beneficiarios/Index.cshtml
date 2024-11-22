@@ -1,0 +1,34 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Beneficiarios.js"></script>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <h5 class="card-title">Lista de Beneficiarios</h5>
+            <a href="@Url.Action("CreateBeneficiario", "Beneficiarios")" class="btn-insertar">Crear Beneficiario</a>
+        </div>
+        <div class="table-responsive">
+            <table id="beneficiarios-table" class="table text-nowrap align-middle mb-0">
+                <thead>
+                    <tr class="border-2 border-bottom border-primary border-0">
+                        <th>#</th>
+                        <th>Identificación</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    <!-- Aquí se llenará dinámicamente con los datos -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
