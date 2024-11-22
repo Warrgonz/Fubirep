@@ -1,34 +1,37 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+﻿@model List<fubi_client.Models.Beneficiarios>
 
-@section Scripts {
-    <script src="~/js/Beneficiarios.js"></script>
-}
-
-<div class="card">
-    <div class="card-body">
-        <div class="d-flex justify-content-between">
-            <h5 class="card-title">Lista de Beneficiarios</h5>
-            <a href="@Url.Action("CreateBeneficiario", "Beneficiarios")" class="btn-insertar">Crear Beneficiario</a>
-        </div>
-        <div class="table-responsive">
-            <table id="beneficiarios-table" class="table text-nowrap align-middle mb-0">
-                <thead>
-                    <tr class="border-2 border-bottom border-primary border-0">
-                        <th>#</th>
-                        <th>Identificación</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    <!-- Aquí se llenará dinámicamente con los datos -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="container mt-4">
+    <h2>Lista de Beneficiarios</h2>
+    <a class="btn btn-primary mb-3" href="/Beneficiarios/Create">Crear Beneficiario</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cédula</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Cedula</td>
+                    <td>@item.Beneficiario</td>
+                    <td>@item.Correo</td>
+                    <td>@item.Telefono</td>
+                    <td>@item.Direccion</td>
+                    <td>
+                        <a class="btn btn-info" href="/Beneficiarios/Edit/@item.Id">Editar</a>
+                        <a class="btn btn-danger" href="/Beneficiarios/Delete/@item.Id">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
+

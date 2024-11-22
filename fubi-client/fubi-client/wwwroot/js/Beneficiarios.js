@@ -1,34 +1,29 @@
-﻿// Data table con los beneficiarios
+﻿// Inicializar DataTable con datos de beneficiarios
 $(document).ready(function () {
     $('#beneficiario-table').DataTable({
-        data: [],
+        ajax: {
+            url: '/Beneficiarios/GetAll', // Endpoint para obtener los datos
+            dataSrc: '' // Adaptar según el formato del JSON recibido
+        },
         columns: [
-            { title: "#" },
-            { title: "Cédula" },
-            { title: "Beneficiario" },
-            { title: "Correo" },
-            { title: "Teléfono" },
-            { title: "Dirección" },
-            { title: "Acciones" }
+            { data: "Id", title: "#" },
+            { data: "Cedula", title: "Cédula" },
+            { data: "Beneficiario", title: "Beneficiario" },
+            { data: "Correo", title: "Correo" },
+            { data: "Telefono", title: "Teléfono" },
+            { data: "Direccion", title: "Dirección" },
+            {
+                data: null,
+                title: "Acciones",
+                render: function (data) {
+                    return `
+                        <a class="btn btn-sm btn-warning" href="/Beneficiarios/Edit/${data.Id}">Editar</a>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBeneficiario(${data.Id})">Eliminar</button>`;
+                }
+            }
         ],
         language: {
-            emptyTable: "No hay datos disponibles en la tabla",
             url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json"
         }
     });
 });
-// Mostrar el preview de la imagen del beneficiario.
-function previewBeneficiarioImage(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-        // Cambiar la fuente de la imagen al archivo cargado
-        document.getElementById('beneficiarioPic').src = e.target.result;
-    };
-
-    // Leer el archivo como una URL de imagen
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-}

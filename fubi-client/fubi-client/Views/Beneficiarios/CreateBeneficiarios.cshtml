@@ -1,90 +1,39 @@
 ﻿@model fubi_client.Models.Beneficiarios
 
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-@section Scripts {
-    <script src="~/js/Beneficiarios.js"></script>  
-}
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/beneficiarios.css" />
-}
-
-<section class="p-3">
-    @if (ViewBag.Mensaje != null)
-    {
-        <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
-    }
-
-    @if (ViewBag.ErrorMessage != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
-            @ViewBag.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="container mt-4">
+    <h2>Crear Beneficiario</h2>
+    <form asp-action="Create" method="post">
+        <div class="form-group">
+            <label for="Cedula">Cédula</label>
+            <input type="number" class="form-control" id="Cedula" name="Cedula" value="@Model.Cedula" required />
         </div>
-    }
 
-    <h2>Registrar Nuevo Beneficiario</h2>
-    <div class="d-flex flex-column rounded-circle justify-content-center align-items-center">
-        <img id="profilePic" src="~/images/no-profile-pic-icon-27.webp" width="200px" alt="Profile picture overview" />
-        <p>Prevista imagen del perfil</p>
-    </div>
+        <div class="form-group">
+            <label for="Beneficiario">Nombre Completo</label>
+            <input type="text" class="form-control" id="Beneficiario" name="Beneficiario" value="@Model.Beneficiario" required />
+        </div>
 
-    <form asp-action="Create" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label class="form-label">Cédula<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Cedula" class="form-control">
+        <div class="form-group">
+            <label for="Correo">Correo Electrónico</label>
+            <input type="email" class="form-control" id="Correo" name="Correo" value="@Model.Correo" />
+        </div>
 
-            @if (ViewBag.ErrorMessage != null)
-            {
-                <p class="text-danger">*@ViewBag.ErrorMessage</p>
-            }
+        <div class="form-group">
+            <label for="Telefono">Teléfono</label>
+            <input type="number" class="form-control" id="Telefono" name="Telefono" value="@Model.Telefono" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Nombre<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Nombre" class="form-control">
+
+        <div class="form-group">
+            <label for="Direccion">Dirección</label>
+            <textarea class="form-control" id="Direccion" name="Direccion" rows="3">@Model.Direccion</textarea>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Telefono" class="form-control">
+
+        <div class="form-group">
+            <label for="RutaImagen">Ruta de Imagen</label>
+            <input type="text" class="form-control" id="RutaImagen" name="RutaImagen" value="@Model.RutaImagen" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Direccion" class="form-control">
-        </div>
-        <div class="pt-3 form-group">
-            <label for="beneficiarioImage">Selecciona una imagen de perfil</label>
-            <input type="file" class="form-control-file" asp-for="RutaImagen" id="beneficiarioImage" onchange="previewImage(event)">
-        </div>
-        <div class="pt-3">
-            <input type="submit" class="btn btn-success btn-md mr-2" value="Registrar Beneficiario">
-            <a href="@Url.Action("Index", "Beneficiarios")" class="btn btn-danger text-light btn-md">Cancelar</a>
-        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+        <a class="btn btn-secondary mt-3" href="/Beneficiarios/Index">Cancelar</a>
     </form>
-</section>
-
-<script>
-    // Previsualizar imagen cargada
-    function previewImage(event) {
-        const image = document.getElementById('profilePic');
-        const file = event.target.files[0];
-        image.src = URL.createObjectURL(file);
-    }
-
-    // Ocultar mensaje de error después de 5 segundos
-    function sleep(time) {
-        return new Promise((resolve) => setTimeout(resolve, time));
-    }
-
-    (() => {
-        let alert = document.getElementById('error-message');
-        if (alert != null) {
-            sleep(5000).then(() => {
-                alert.style.display = 'none';
-            });
-        }
-    })()
-</script>
-
+</div>
