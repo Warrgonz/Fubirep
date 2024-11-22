@@ -1,11 +1,11 @@
-﻿@model fubi_client.Models.Beneficiario
+﻿@model fubi_client.Models.Beneficiarios
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section Scripts {
-    <script src="~/js/Beneficiarios.js"></script>
+    <script src="~/js/Beneficiarios.js"></script>  
 }
 
 @section Styles {
@@ -26,16 +26,16 @@
         </div>
     }
 
-    <h2>Crear Nuevo Beneficiario</h2>
+    <h2>Registrar Nuevo Beneficiario</h2>
     <div class="d-flex flex-column rounded-circle justify-content-center align-items-center">
         <img id="profilePic" src="~/images/no-profile-pic-icon-27.webp" width="200px" alt="Profile picture overview" />
         <p>Prevista imagen del perfil</p>
     </div>
 
-    <form asp-action="CreateBeneficiario" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
+    <form asp-action="Create" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
         <div class="mb-3">
-            <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="cedula" class="form-control">
+            <label class="form-label">Cédula<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Cedula" class="form-control">
 
             @if (ViewBag.ErrorMessage != null)
             {
@@ -43,44 +43,37 @@
             }
         </div>
         <div class="mb-3">
-            <label class="form-label">Nombre Completo<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="beneficiario" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
-            <input type="email" asp-for="correo" class="form-control">
+            <label class="form-label">Nombre<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Nombre" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="telefono" class="form-control">
+            <input type="text" asp-for="Telefono" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
-            <textarea asp-for="direccion" class="form-control"></textarea>
+            <input type="text" asp-for="Direccion" class="form-control">
         </div>
         <div class="pt-3 form-group">
             <label for="beneficiarioImage">Selecciona una imagen de perfil</label>
-            <input type="file" class="form-control-file" asp-for="ruta_imagen" id="beneficiarioImage" onchange="previewImage(event)">
+            <input type="file" class="form-control-file" asp-for="RutaImagen" id="beneficiarioImage" onchange="previewImage(event)">
         </div>
         <div class="pt-3">
-            <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Beneficiario">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Registrar Beneficiario">
             <a href="@Url.Action("Index", "Beneficiarios")" class="btn btn-danger text-light btn-md">Cancelar</a>
         </div>
     </form>
 </section>
 
 <script>
-    // Función para previsualizar imagen
+    // Previsualizar imagen cargada
     function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function () {
-            const output = document.getElementById('profilePic');
-            output.src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
+        const image = document.getElementById('profilePic');
+        const file = event.target.files[0];
+        image.src = URL.createObjectURL(file);
     }
 
-    // Función para ocultar alertas
+    // Ocultar mensaje de error después de 5 segundos
     function sleep(time) {
         return new Promise((resolve) => setTimeout(resolve, time));
     }
@@ -92,5 +85,6 @@
                 alert.style.display = 'none';
             });
         }
-    })();
+    })()
 </script>
+
