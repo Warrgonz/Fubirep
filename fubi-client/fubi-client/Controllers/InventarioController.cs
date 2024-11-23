@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using static System.Net.WebRequestMethods;
 using fubi_client.Models;
 using System.Text.Json;
+using System.Reflection;
+using System.Net.Http.Headers;
 
 namespace fubi_client.Controllers
 {
