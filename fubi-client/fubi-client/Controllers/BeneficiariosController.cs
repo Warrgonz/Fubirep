@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using static System.Net.WebRequestMethods;
 using fubi_client.Models;
 using System.Text.Json;
 
@@ -15,47 +16,66 @@ namespace fubi_client.Controllers
             _conf = conf;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            using (var client = _http.CreateClient())
-            {
-                var url = $"{_conf.GetSection("Variables:UrlApi").Value}Beneficiarios/GetAll";
-                var response = await client.GetAsync(url);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var data = await response.Content.ReadFromJsonAsync<List<Beneficiarios>>();
-                    return View(data);
-                }
-
-                ViewBag.ErrorMessage = "No se pudieron cargar los beneficiarios.";
-                return View(new List<Beneficiarios>());
-            }
+            return View();
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult CreateBeneficiarios()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Beneficiarios model)
+        public async Task<IActionResult> CreateBeneficiarios(Beneficiarios model, IFormFile ruta_imagen)
         {
             using (var client = _http.CreateClient())
             {
-                var url = $"{_conf.GetSection("Variables:UrlApi").Value}Beneficiarios/Create";
-                var content = JsonContent.Create(model);
+                // 1. Crear beneficiario sin imagen
+                var url = _conf.GetSection("Variables:UrlApi").Value + "Benefeciarios/CreateBeneficiarios";
+                var userContent = JsonContent.Create(model);
 
-                var response = await client.PostAsync(url, content);
+                var response = await client.PostAsync(url, userContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index");
-                }
+                    // 2. Subir imagen
+                    if (ruta_imagen != null && ruta_imagen.Length > 0)
+                    {
+                        var imageUrl = $"{_conf.GetSection("Variables:UrlApi").Value}Beneficiarios/UploadBeneficiariosImage/{model.cedula}";
+                        var formContent = new MultipartFormDataContent();
+                        formContent.Add(new StreamContent(ruta_imagen.OpenReadStream()), "file", ruta_imagen.FileName);
 
-                ViewBag.ErrorMessage = "Error al crear el beneficiario.";
-                return View(model);
+                        var uploadResponse = await client.PostAsync(imageUrl, formContent);
+
+                        if (uploadResponse.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Index", "Beneficiarios");
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = "No se pudo cargar la imagen.";
+                            return View(model);
+                        }
+                    }
+
+                    return RedirectToAction("Index", "Beneficiarios");
+                }
+                else
+                {
+                    var result = await response.Content.ReadFromJsonAsync<Respuesta>();
+
+                    if (result.Codigo == -2)
+                    {
+                        ViewBag.ErrorMessage = result.Mensaje;
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Hubo un error interno";
+                    }
+                    return View(model);
+                }
             }
         }
     }

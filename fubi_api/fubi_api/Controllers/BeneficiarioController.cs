@@ -4,9 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using fubi_api.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using fubi_api.Utils.Smtp;
 using System.Text;
+using System.Security.Cryptography;
+using fubi_api.Utils.Smtp;
 using fubi_api.Utils.S3;
+using Amazon.S3.Model;
 
 namespace fubi_api.Controllers
 {
@@ -25,8 +29,8 @@ namespace fubi_api.Controllers
 
         // Método para crear un beneficiario
         [HttpPost]
-        [Route("CreateBeneficiario")]
-        public async Task<IActionResult> CrearBeneficiario([FromBody] Beneficiarios model)
+        [Route("CreateBeneficiarios")]
+        public async Task<IActionResult> CrearBeneficiarios([FromBody] Beneficiarios model)
         {
             var respuesta = new Respuesta();
 
