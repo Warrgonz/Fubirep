@@ -1,9 +1,22 @@
-﻿@{
+﻿
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section Scripts {
     <script src="~/js/User.js"></script>
+}
+
+@functions {
+    public string GetRolDescription(int? rol)
+    {
+        return rol switch
+        {
+            1 => "Root",
+            2 => "Admin",
+            3 => "Colaborador"
+        };
+    }
 }
 
 <div class="card">
@@ -20,11 +33,33 @@
                         <th>Identificación</th>
                         <th>Nombre</th>
                         <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Foto de perfil</th>
                         <th>Rol</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="table-group-divider">
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                        <tr>
+                            <td>@(i + 1)</td> <!-- Aquí mostramos el índice incrementado -->
+                            <td class="text-center">@Model[i].cedula</td>
+                            <td>@Model[i].nombre @Model[i].primer_apellido @Model[i].segundo_apellido</td>
+                            <td>@Model[i].correo</td>
+                            <td>@Model[i].telefono</td>
+                            <td class="d-flex justify-content-center align-items-center">
+                                <img src="@Model[i].ruta_imagen" width="80px" alt="Imagen del usuario" />
+                            </td>
+                            <td>@GetRolDescription(Model[i].rol)</td>
+                            <td>@(Model[i].activo ? "Activo" : "Inactivo")</td>
+                            <td>
+                                <a href="@Url.Action("EditUser", "User", new { id = Model[i].id_usuario })" class="btn btn-sm btn-primary">Editar</a>
+                                <button class="btn btn-danger btn-desactivar" data-cedula="@Model[i].cedula">Desactivar</button>
+                            </td>
+                        </tr>
+                        }
 
                 </tbody>
             </table>

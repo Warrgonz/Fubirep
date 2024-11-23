@@ -14,7 +14,7 @@ namespace fubi_api.Models
         public string? ruta_imagen { get; set; }
         public DateTime? fecha_nacimiento { get; set; }
         public int rol { get; set; }
-        public bool activo { get; set; } = true;
+        public bool activo { get; set; }
     }
 
 }

@@ -30,6 +30,30 @@ namespace fubi_api.Controllers
             _bucket = bucket;
         }
 
+        [HttpGet]
+        [Route("ObtenerUsuarios")]
+        public IActionResult ConsultarUsuarios()
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                var result = context.Query<User>("ConsultarUsuarios", new { });
+
+                if (result.Any())
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No hay usuarios registrados en este momento";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
         // Método para crear el usuario y subir la imagen
         [HttpPost]
         [Route("CreateUser")]
@@ -40,9 +64,9 @@ namespace fubi_api.Controllers
             try
             {
                 // Validar los campos obligatorios
-                if (string.IsNullOrEmpty(model.cedula) || string.IsNullOrEmpty(model.correo) || string.IsNullOrEmpty(model.nombre))
+                if (string.IsNullOrEmpty(model.cedula) || string.IsNullOrEmpty(model.primer_apellido) || string.IsNullOrEmpty(model.correo) || string.IsNullOrEmpty(model.nombre))
                 {
-                    respuesta.Codigo = -1;
+                    respuesta.Codigo = -3;
                     respuesta.Mensaje = "Los campos obligatorios no pueden estar vacíos.";
                     return BadRequest(respuesta);
                 }
@@ -64,7 +88,7 @@ namespace fubi_api.Controllers
                         Contrasena = encryptedPassword,
                         Telefono = model.telefono,
                         FechaNacimiento = model.fecha_nacimiento,
-                        RutaImagen = "",  // Inicialmente no hay imagen
+                        RutaImagen = "",  
                         Rol = model.rol
                     };
 
@@ -101,7 +125,7 @@ namespace fubi_api.Controllers
                 {
                     // Error de violación de clave única
                     respuesta.Codigo = -2;
-                    respuesta.Mensaje = "La cédula ya está registrada en el sistema.";
+                    respuesta.Mensaje = "El usuario ya está registrado en el sistema.";
                 }
                 else
                 {
@@ -127,12 +151,21 @@ namespace fubi_api.Controllers
 
             try
             {
+
                 // Validar que el archivo no sea nulo o vacío
                 if (file == null || file.Length == 0)
                 {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "El archivo no puede estar vacío.";
-                    return BadRequest(respuesta);
+                    var defaultImageUrl = _conf.GetSection("DefaultImage:imagen_defecto").Value;
+
+                    // Descargar la imagen desde la URL
+                    using var httpClient = new HttpClient();
+                    var imageBytes = await httpClient.GetByteArrayAsync(defaultImageUrl);
+
+                    // Convertir los bytes a un flujo
+                    var stream = new MemoryStream(imageBytes);
+
+                    // Crear un IFormFile usando el flujo
+                    file = new FormFile(stream, 0, stream.Length, "file", "default-image.jpg");
                 }
 
                 // Subir archivo a S3 y obtener la URL
@@ -169,6 +202,61 @@ namespace fubi_api.Controllers
 
             return Ok(respuesta);
         }
+
+        [HttpPost]
+        [Route("DesactivarUsuario/{cedula}")]
+        public IActionResult DesactivarUsuario(string cedula)
+        {
+            Console.WriteLine($"Intentando desactivar usuario con cédula: {cedula}");
+            var respuesta = new Respuesta();
+
+            try
+            {
+                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    Console.WriteLine("Conexión a base de datos establecida.");
+
+                    var parameters = new { Cedula = cedula };
+
+                    Console.WriteLine("Ejecutando procedimiento almacenado...");
+
+                    var rowsAffected = context.QuerySingleOrDefault<int>(
+                        "DesactivarUsuario",
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    Console.WriteLine($"Filas afectadas: {rowsAffected}");
+
+                    if (rowsAffected > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Usuario desactivado exitosamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "No se encontró el usuario o ya estaba desactivado.";
+                    }
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.WriteLine($"Error de SQL: {sqlEx.Message}");
+                respuesta.Codigo = -2;
+                respuesta.Mensaje = "Error al comunicarse con la base de datos.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inesperado: {ex.Message}");
+                respuesta.Codigo = -3;
+                respuesta.Mensaje = $"Error inesperado: {ex.Message}";
+            }
+
+            // Devuelve la respuesta como JSON usando Ok()
+            return Ok(respuesta);
+        }
+
 
 
 

@@ -22,7 +22,6 @@
     {
         <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
             @ViewBag.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
@@ -36,11 +35,6 @@
         <div class="mb-3">
             <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
             <input type="text" asp-for="cedula" class="form-control">
-
-            @if (ViewBag.ErrorMessage != null)
-            {
-                <p class="text-danger">*@ViewBag.ErrorMessage</p>
-            }
         </div>
         <div class="mb-3">
             <label class="form-label">Nombre<span class="campos-requeridos">*</span></label>
@@ -51,7 +45,7 @@
             <input type="text" asp-for="primer_apellido" class="form-control">
         </div>
         <div class="mb-3">
-            <label class="form-label">Segundo Apellido<span class="campos-requeridos">*</span></label>
+            <label class="form-label">Segundo Apellido</label>
             <input type="text" asp-for="segundo_apellido" class="form-control">
         </div>
         <div class="mb-3">
@@ -59,11 +53,11 @@
             <input type="correo" asp-for="correo" class="form-control">
         </div>
         <div class="mb-3">
-            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
+            <label class="form-label">Teléfono</label>
             <input type="text" asp-for="telefono" class="form-control">
         </div>
         <div class="mb-3">
-            <label class="form-label">Fecha de nacimiento<span class="campos-requeridos">*</span></label>
+            <label class="form-label">Fecha de nacimiento</label>
             <input type="date" asp-for="fecha_nacimiento" class="form-control">
         </div>
         <label for="rol">Rol<span class="campos-requeridos">*</span></label>

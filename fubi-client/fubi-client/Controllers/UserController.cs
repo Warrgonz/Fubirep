@@ -2,6 +2,8 @@
 using static System.Net.WebRequestMethods;
 using fubi_client.Models;
 using System.Text.Json;
+using System.Reflection;
+using System.Net.Http.Headers;
 
 namespace fubi_client.Controllers
 {
@@ -18,7 +20,30 @@ namespace fubi_client.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            using (var client = _http.CreateClient())
+            {
+                // La URL de la API donde se obtiene la lista de usuarios
+                string url = _conf.GetSection("Variables:UrlApi").Value + "User/ObtenerUsuarios";
+
+                // Realizamos la solicitud GET al endpoint de la API
+                var response = client.GetAsync(url).Result;
+
+                // Leemos la respuesta como un objeto de tipo 'Respuesta'
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                // Si la respuesta es exitosa y tiene datos
+                if (result != null && result.Codigo == 0 && result.Contenido != null)
+                {
+                    // Deserializamos el contenido en una lista de usuarios
+                    var datosContenido = JsonSerializer.Deserialize<List<User>>((JsonElement)result.Contenido);
+
+                    // Devolvemos la vista con los usuarios obtenidos
+                    return View(new List<User>(datosContenido));
+                }
+
+                // Si no hay usuarios o la respuesta fue incorrecta, devolvemos una lista vacía
+                return View(new List<User>());
+            }
         }
 
         [HttpGet]
@@ -32,7 +57,6 @@ namespace fubi_client.Controllers
         {
             using (var client = _http.CreateClient())
             {
-                // 1. Crear usuario sin imagen
                 var url = _conf.GetSection("Variables:UrlApi").Value + "User/CreateUser";
                 var userContent = JsonContent.Create(model);
 
@@ -40,33 +64,49 @@ namespace fubi_client.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // 2. Subir imagen
+                    var imageUrl = $"{_conf.GetSection("Variables:UrlApi").Value}User/UploadUserImage/{model.cedula}";
+                    var formContent = new MultipartFormDataContent();
+
                     if (ruta_imagen != null && ruta_imagen.Length > 0)
                     {
-                        var imageUrl = $"{_conf.GetSection("Variables:UrlApi").Value}User/UploadUserImage/{model.cedula}";
-                        var formContent = new MultipartFormDataContent();
+                        // Subir imagen proporcionada por el usuario
                         formContent.Add(new StreamContent(ruta_imagen.OpenReadStream()), "file", ruta_imagen.FileName);
+                    }
+                    else
+                    {
+                        // Asignar imagen por defecto
+                        var defaultImageUrl = _conf.GetSection("DefaultImage:imagen_defecto").Value;
 
-                        var uploadResponse = await client.PostAsync(imageUrl, formContent);
+                        // Descargar la imagen por defecto
+                        using var httpClient = new HttpClient();
+                        var imageBytes = await httpClient.GetByteArrayAsync(defaultImageUrl);
 
-                        if (uploadResponse.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index", "User");
-                        }
-                        else
-                        {
-                            ViewBag.ErrorMessage = "No se pudo cargar la imagen.";
-                            return View(model);
-                        }
+                        // Crear un flujo y asignarlo al contenido
+                        var stream = new MemoryStream(imageBytes);
+                        formContent.Add(new StreamContent(stream), "file", "default-image.jpg");
                     }
 
-                    return RedirectToAction("Index", "User");
+                    var uploadResponse = await client.PostAsync(imageUrl, formContent);
+
+                    if (uploadResponse.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Index", "User");
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "No se pudo cargar la imagen.";
+                        return View(model);
+                    }
                 }
                 else
                 {
                     var result = await response.Content.ReadFromJsonAsync<Respuesta>();
-                    
+
                     if (result.Codigo == -2)
+                    {
+                        ViewBag.ErrorMessage = result.Mensaje;
+                    }
+                    else if (result.Codigo == -3)
                     {
                         ViewBag.ErrorMessage = result.Mensaje;
                     }
@@ -78,5 +118,12 @@ namespace fubi_client.Controllers
                 }
             }
         }
+
+        [HttpPost]
+        public IActionResult DesactivarUsuario()
+        {
+            return View();
+        }
+
     }
 }
