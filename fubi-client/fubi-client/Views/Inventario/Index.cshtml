@@ -1,0 +1,55 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Inventario.js"></script>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <h5 class="card-title">Lista de Inventarios</h5>
+            <a href="@Url.Action("CreateInventario", "Inventario")" class="btn-insertar">Crear Inventario</a>
+        </div>
+        <div class="table-responsive">
+            <table id="inventario-table" class="table text-nowrap align-middle mb-0">
+                <thead>
+                    <tr class="border-2 border-bottom border-primary border-0">
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>Cantidad Prestada</th>
+                        <th>Imagen</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model[i].nombre</td>
+                            <td>@Model[i].descripcion</td>
+                            <td>@Model[i].cantidad</td>
+                            <td>@Model[i].cantidad_prestada</td>
+                            <td class="d-flex justify-content-center align-items-center">
+                                <img src="@Model[i].ruta_imagen" width="80px" alt="Imagen del inventario" />
+                            </td>
+                            <td>
+                                <a href="@Url.Action("EditInventario", "Inventario", new { id = Model[i].id_inventario })" class="btn btn-primary btn-sm">Editar</a>
+                                <form asp-action="DeleteInventario" asp-controller="Inventario" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@Model[i].id_inventario" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                </form>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
