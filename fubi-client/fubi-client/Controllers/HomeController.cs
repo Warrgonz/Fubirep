@@ -21,7 +21,10 @@ namespace fubi_client.Controllers
         {
             return View();
         }
-
+        public IActionResult CreateBeneficiarios()
+        {
+            return View();
+        }
 
     }
 }
