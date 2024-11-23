@@ -1,0 +1,92 @@
+﻿@model fubi_client.Models.Inventario
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Inventario.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/inventario.css" />
+}
+
+<section class="p-3">
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <h2>Crear Nuevo Inventario</h2>
+    <div class="d-flex flex-column rounded-circle justify-content-center align-items-center">
+        <img id="inventoryPic" src="~/images/no-image-placeholder.png" width="200px" alt="Imagen del inventario" />
+        <p>Vista previa de la imagen del inventario</p>
+    </div>
+
+    <form asp-action="CreateInventario" asp-controller="Inventario" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Nombre del Producto<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="nombre" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción del Producto<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="descripcion" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cantidad Disponible<span class="campos-requeridos">*</span></label>
+            <input type="number" asp-for="cantidad" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cantidad Prestada</label>
+            <input type="number" asp-for="cantidad_prestada" class="form-control">
+        </div>
+
+        <div class="pt-3 form-group">
+            <label for="inventoryImage">Selecciona una imagen del producto</label>
+            <input type="file" class="form-control-file" asp-for="ruta_imagen" id="inventoryImage" onchange="previewImage(event)">
+        </div>
+
+        <div class="pt-3">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Inventario">
+            <a href="@Url.Action("Index", "Inventario")" class="btn btn-danger text-light btn-md">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<script>
+
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const output = document.getElementById('inventoryPic');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time))
+    }
+
+    (() => {
+        let alert = document.getElementById('error-message');
+        if (alert != null) {
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })()
+
+</script>
