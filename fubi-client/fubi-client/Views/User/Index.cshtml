@@ -26,14 +26,15 @@
             <a href="@Url.Action("CreateUser", "User")" class="btn-insertar">Crear Usuario</a>
         </div>
         <div class="table-responsive">
-            <table id="user-table" class="table text-nowrap align-middle mb-0">
-                <thead>
+            <table id="user-table" style="text-align: center; vertical-align: middle;" class="table text-nowrap align-middle mb-0">
+                <thead style="text-align: center;">
                     <tr class="border-2 border-bottom border-primary border-0">
                         <th>#</th>
                         <th>Identificación</th>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Teléfono</th>
+                        <th>Fecha de nacimiento</th>
                         <th>Foto de perfil</th>
                         <th>Rol</th>
                         <th>Estado</th>
@@ -48,15 +49,21 @@
                             <td class="text-center">@Model[i].cedula</td>
                             <td>@Model[i].nombre @Model[i].primer_apellido @Model[i].segundo_apellido</td>
                             <td>@Model[i].correo</td>
-                            <td>@Model[i].telefono</td>
-                            <td class="d-flex justify-content-center align-items-center">
+                            <td>@(Model[i].telefono ?? "Sin registro")</td>
+                            <td>@(Model[i].fecha_nacimiento?.ToString("dd/MM/yyyy") ?? "Sin registro")</td>
+                            <td>
                                 <img src="@Model[i].ruta_imagen" width="80px" alt="Imagen del usuario" />
                             </td>
                             <td>@GetRolDescription(Model[i].rol)</td>
                             <td>@(Model[i].activo ? "Activo" : "Inactivo")</td>
                             <td>
-                                <a href="@Url.Action("EditUser", "User", new { id = Model[i].id_usuario })" class="btn btn-sm btn-primary">Editar</a>
-                                <button class="btn btn-danger btn-desactivar" data-cedula="@Model[i].cedula">Desactivar</button>
+                                <a href="@Url.Action("UpdateUser","User", new { cedula = Model[i].cedula })" class="btn">
+                                    <i class="fa fa-edit" style="font-size:1.6em; color: #eaaa27;"></i>
+                                </a>
+                                <a id="AbrirModal" href="#" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                                   data-consecutivo="@Model[i].cedula" data-nombre="@Model[i].nombre">
+                                    <i class="fa fa-ban" style="font-size:1.6em; color: red"></i>
+                                </a>
                             </td>
                         </tr>
                         }

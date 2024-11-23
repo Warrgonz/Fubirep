@@ -11,6 +11,9 @@ using System.Security.Cryptography;
 using fubi_api.Utils.Smtp;
 using fubi_api.Utils.S3;
 using Amazon.S3.Model;
+using static System.Net.WebRequestMethods;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 
 //using Firebase.Auth;
@@ -257,8 +260,96 @@ namespace fubi_api.Controllers
             return Ok(respuesta);
         }
 
+        // yuca
+
+        [HttpGet]
+        [Route("RoleQuery")]
+        public IActionResult ConsultarRoles()
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                var result = context.Query<Role>("ConsultarRoles", new { });
+
+                if (result.Any())
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No hay roles registrados en este momento";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
+        [HttpGet]
+        [Route("QueryUser")]
+        public IActionResult ConsultarUsuario(string cedula)
+        {
+            if (string.IsNullOrWhiteSpace(cedula))
+            {
+                return BadRequest("El parámetro 'cedula' es obligatorio y no puede estar vacío.");
+            }
+
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                var result = context.QueryFirstOrDefault<User>("ConsultarUsuario", new { cedula });
+
+                if (result != null)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "El usuario con la cédula proporcionada no existe.";
+                }
+
+                return Ok(respuesta);
+            }
+        }
 
 
+        [HttpPut]
+        [Route("UpdateUser")]
+        public IActionResult ActualizarUsuario(User model)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                var result = context.Execute("ActualizarPerfil", new
+                {
+                    model.cedula,
+                    model.nombre,
+                    model.primer_apellido,
+                    model.segundo_apellido,
+                    model.telefono,
+                    model.ruta_imagen,
+                    model.fecha_nacimiento,
+                    model.rol
+                });
+
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = "Su información de perfil se ha actualizado correctamente";
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "Su información de perfil no se ha actualizado correctamente";
+                }
+
+                return Ok(respuesta);
+            }
+        }
 
         private string GenerateRandomPassword(int length)
         {

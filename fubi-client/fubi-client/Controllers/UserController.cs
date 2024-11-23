@@ -125,5 +125,94 @@ namespace fubi_client.Controllers
             return View();
         }
 
+        // Actualizar usuarios
+
+        [HttpGet]
+        public IActionResult UpdateUser(string cedula)
+        {
+            ConsultarRoles();
+            return View(ObtenerUsuario(cedula));
+        }
+
+        [HttpPost]
+        public IActionResult UpdateUser(User model)
+        {
+            using (var client = _http.CreateClient())
+            {
+                var url = _conf.GetSection("Variables:UrlApi").Value + "User/UpdateUser";
+
+                JsonContent datos = JsonContent.Create(model);
+
+                var response = client.PutAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    ViewBag.Mensaje = result!.Mensaje;
+                    return RedirectToAction("Index", "User");
+                }
+                else
+                {
+                    ConsultarRoles();
+                    ViewBag.Mensaje = result!.Mensaje;
+                    return View();
+                }
+            }
+        }
+
+
+        // Roles
+
+        [HttpGet]
+        private void ConsultarRoles()
+        {
+            using (var client = _http.CreateClient())
+            {
+                string url = _conf.GetSection("Variables:UrlApi").Value + "User/RoleQuery";
+
+                var response = client.GetAsync(url).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    ViewBag.DropDownRoles = JsonSerializer.Deserialize<List<Role>>((JsonElement)result.Contenido!);
+                }
+            }
+        }
+
+        // Traer un usuario por cedula
+
+        [HttpGet]
+        private User? ObtenerUsuario(string cedula)
+        {
+            using (var client = _http.CreateClient())
+            {
+                string url = _conf.GetSection("Variables:UrlApi").Value + "User/QueryUser?cedula=" + cedula;
+
+                if (string.IsNullOrEmpty(url))
+                {
+                    throw new Exception("La URL para la solicitud es nula o vacía.");
+                }
+
+                var response = client.GetAsync(url).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Error al obtener datos del usuario. Código de estado: {response.StatusCode}");
+                }
+
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0 && result.Contenido != null)
+                {
+                    return JsonSerializer.Deserialize<User>((JsonElement)result.Contenido!);
+                }
+
+                return null; 
+            }
+        }
+
+
+
     }
 }

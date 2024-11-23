@@ -1,0 +1,104 @@
+﻿@using fubi_client.Models
+@model fubi_client.Models.User
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/User.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user.css" />
+}
+
+<section class="p-3">
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+            @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <h2>Actualizar Usuario</h2>
+    <div class="d-flex flex-column rounded-circle justify-content-center align-items-center">
+        <img id="profilePic" src="@Model.ruta_imagen" width="200px" alt="Profile picture overview" />
+        <p>Prevista imagen del perfil</p>
+    </div>
+
+    <form asp-action="UpdateUser" asp-controller="User" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Identificación</label>
+            <input type="text" asp-for="cedula" class="form-control" readonly>
+            <p>Este campo solo puede ser visualizado</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Correo Electrónico</label>
+            <input type="correo" asp-for="correo" class="form-control" readonly>
+            <p>Este campo solo puede ser visualizado</p>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nombre<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="nombre" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Primer Apellido<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="primer_apellido" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Segundo Apellido</label>
+            <input type="text" asp-for="segundo_apellido" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" asp-for="telefono" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" asp-for="fecha_nacimiento" class="form-control">
+        </div>
+        <label for="rol">Rol<span class="campos-requeridos">*</span></label>
+        <select asp-for="rol" class="form-control">
+            @{
+                var roles = ViewBag.DropDownRoles as List<Role>;
+                if (roles != null)
+                {
+                    @foreach (var item in roles)
+                    {
+                        <option value="@item.id_rol">@item.nombre</option>
+                    }
+                }
+            }
+        </select>
+        <div class="pt-3 form-group">
+            <label for="userImage">Selecciona una imagen de perfil</label>
+            <input type="file" class="form-control-file" asp-for="ruta_imagen" id="userImage" onchange="previewImage(event)">
+        </div>
+        <div class="pt-3">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Actualizar">
+            <a href="@Url.Action("Index", "User")" class="btn btn-danger text-light btn-md">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<script>
+
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time))
+    }
+    (() => {
+        let alert = document.getElementById('error-message');
+        if (alert != null) {
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })()
+</script>

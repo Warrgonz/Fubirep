@@ -32,3 +32,7 @@
     padding: 8px;
     background-color: transparent;
 }
+
+.dt-head-center {
+    text-align: center;
+}

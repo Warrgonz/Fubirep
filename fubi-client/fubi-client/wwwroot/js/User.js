@@ -4,6 +4,7 @@ $(document).ready(function () {
         language: {
             url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json'
         }
+        { className: "dt-head-center", targets: [0] }
     });
 });
 
