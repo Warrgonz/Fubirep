@@ -1,0 +1,56 @@
+﻿@model List<fubi_client.Models.PrestamoRequest>
+
+@{
+    ViewData["Title"] = "Lista de Préstamos";
+}
+
+<h2>Lista de Préstamos</h2>
+
+<div class="mb-3 text-end">
+    <a href="@Url.Action("CreatePrestamo", "Prestamo")" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Crear Préstamo
+    </a>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha del Préstamo</th>
+                <th>Nombre del Beneficiario</th>
+                <th>Nombre del Encargado</th>
+                <th>Apellido del Encargado</th>
+                <th>Estado del Préstamo</th>
+                <th>Descripción del Item</th>
+                <th>Acciones</th> <!-- Nueva columna para acciones -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var prestamo in Model)
+            {
+                <tr>
+                    <td>@prestamo.LoanID</td>
+                    <td>@prestamo.LoanDate.ToString("yyyy-MM-dd")</td>
+                    <td>@prestamo.BeneficiaryName</td>
+                    <td>@prestamo.ManagerName</td>
+                    <td>@prestamo.ManagerLastName</td>
+                    <td>@prestamo.LoanStatus</td>
+                    <td>@prestamo.ItemDescription</td>
+                    <td>
+                        <!-- Botón Editar -->
+                        <a href="@Url.Action("EditPrestamo", "Prestamo", new { id = prestamo.LoanID })"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info text-center">No hay préstamos registrados en este momento.</div>
+}

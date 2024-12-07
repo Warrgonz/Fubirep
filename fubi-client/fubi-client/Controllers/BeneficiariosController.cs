@@ -79,7 +79,7 @@ namespace fubi_client.Controllers
 
                 if (result != null && result.Codigo == 0)
                 {
-                    var beneficiario = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido)?.FirstOrDefault(b => b.Id == id);
+                    var beneficiario = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido)?.FirstOrDefault(b => b.id_beneficiario == id);
                     return View(beneficiario);
                 }
 

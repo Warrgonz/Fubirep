@@ -1,0 +1,108 @@
+﻿@model fubi_client.Models.Prestamo
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Prestamo.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/prestamo.css" />
+}
+
+<section class="p-3">
+
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-success text-center">@ViewBag.Mensaje</div>
+    }
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <h2>Crear Nuevo Préstamo</h2>
+
+    <form asp-action="CreatePrestamo" asp-controller="Prestamo" method="post">
+        <div class="mb-3">
+            <label class="form-label">Beneficiario<span class="campos-requeridos">*</span></label>
+            <select asp-for="id_beneficiario" class="form-control">
+                <option value="" selected>Seleccione un beneficiario</option>
+                @foreach (var beneficiario in ViewBag.Beneficiarios)
+                {
+                    <option value="@beneficiario.id_beneficiario">@beneficiario.nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Encargado<span class="campos-requeridos">*</span></label>
+            <select asp-for="id_encargado" class="form-control">
+                <option value="" selected>Seleccione un encargado</option>
+                @foreach (var encargado in ViewBag.Encargados)
+                {
+                    <option value="@encargado.id_usuario">@encargado.nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Inventario<span class="campos-requeridos">*</span></label>
+            <select asp-for="id_inventario" class="form-control">
+                <option value="" selected>Seleccione un producto</option>
+                @foreach (var inventario in ViewBag.Inventarios)
+                {
+                    <option value="@inventario.id_inventario">@inventario.nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cantidad<span class="campos-requeridos">*</span></label>
+            <input type="number" asp-for="cantidad" class="form-control" min="1" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Estado del Préstamo<span class="campos-requeridos">*</span></label>
+            <select asp-for="id_estado" class="form-control">
+                <option value="" selected>Seleccione un estado</option>
+                @foreach (var estado in ViewBag.Estados)
+                {
+                    <option value="@estado.Id">@estado.Nombre</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fecha Límite de Devolución<span class="campos-requeridos">*</span></label>
+            <input type="date" asp-for="fecha_limite_devolución" class="form-control" />
+        </div>
+
+        <div class="pt-3">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Préstamo">
+            <a href="@Url.Action("CreatePrestamo", "Prestamo")" class="btn btn-danger text-light btn-md">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<script>
+    // Ocultar mensaje de error después de 5 segundos
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+
+    (() => {
+        let alert = document.getElementById('error-message');
+        if (alert != null) {
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })();
+</script>

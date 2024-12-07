@@ -2,6 +2,7 @@
 using fubi_api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System;
 using System.Data;
 
 namespace fubi_api.Controllers
@@ -55,10 +56,10 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
-                        Cedula = model.Cedula,
-                        Correo = model.Correo,
-                        Telefono = model.Telefono,
-                        Direccion = model.Direccion
+                        Cedula = model.cedula,
+                        Correo = model.correo,
+                        Telefono = model.telefono,
+                        Direccion = model.direccion
                     };
 
                     var result = await context.ExecuteAsync("CrearBeneficiario", parameters, commandType: CommandType.StoredProcedure);
@@ -98,11 +99,14 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
-                        Id = model.Id,
-                        Cedula = model.Cedula,
-                        Correo = model.Correo,
-                        Telefono = model.Telefono,
-                        Direccion = model.Direccion
+                        id_beneficiario = model.id_beneficiario,
+                        cedula = model.cedula,
+                        correo = model.correo,
+                        telefono = model.telefono,
+                        direccion = model.direccion,
+                        Activo = model.Activo,
+                        beneficiario = model.beneficiario,
+                        Nombre = model.Nombre,
                     };
 
                     var result = await context.ExecuteAsync("ActualizarBeneficiario", parameters, commandType: CommandType.StoredProcedure);

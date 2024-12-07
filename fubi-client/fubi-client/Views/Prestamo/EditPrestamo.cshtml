@@ -1,0 +1,90 @@
+﻿@model fubi_client.Models.PrestamoDetalle
+
+@{
+    ViewData["Title"] = "Editar Préstamo";
+}
+
+<h2>Editar Préstamo</h2>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<form asp-action="EditPrestamo" asp-controller="Prestamo" method="post">
+
+    <!-- LoanID (Oculto) -->
+    <input type="hidden" asp-for="LoanID" />
+
+    <!-- Beneficiario -->
+    <div class="mb-3">
+        <label class="form-label">Beneficiario</label>
+        <select asp-for="BeneficiaryName" class="form-control">
+            <option value="">Seleccione un beneficiario</option>
+            @foreach (var beneficiario in ViewBag.Beneficiarios)
+            {
+                <option value="@beneficiario.id_beneficiario" selected="@(Model.BeneficiaryName == beneficiario.nombre)">
+                    @beneficiario.nombre
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- Encargado -->
+    <div class="mb-3">
+        <label class="form-label">Encargado</label>
+        <select asp-for="ManagerName" class="form-control">
+            <option value="">Seleccione un encargado</option>
+            @foreach (var encargado in ViewBag.Encargados)
+            {
+                <option value="@encargado.id_usuario" selected="@(Model.ManagerName == encargado.nombre)">
+                    @encargado.nombre @encargado.primer_apellido
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- Inventario -->
+    <div class="mb-3">
+        <label class="form-label">Inventario</label>
+        <select asp-for="ItemName" class="form-control">
+            <option value="">Seleccione un producto</option>
+            @foreach (var inventario in ViewBag.Inventarios)
+            {
+                <option value="@inventario.id_inventario" selected="@(Model.ItemName == inventario.nombre)">
+                    @inventario.nombre
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- Cantidad -->
+    <div class="mb-3">
+        <label class="form-label">Cantidad</label>
+        <input asp-for="LoanQuantity" class="form-control" />
+    </div>
+
+    <!-- Fecha Límite de Devolución -->
+    <div class="mb-3">
+        <label class="form-label">Fecha Límite de Devolución</label>
+        <input type="date" asp-for="LoanDueDate" class="form-control" />
+    </div>
+
+    <!-- Estado -->
+    <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <select asp-for="LoanStatus" class="form-control">
+            <option value="">Seleccione un estado</option>
+            @foreach (var estado in ViewBag.Estados)
+            {
+                <option value="@estado.Id" selected="@(Model.LoanStatus == estado.Nombre)">
+                    @estado.Nombre
+                </option>
+            }
+        </select>
+    </div>
+
+    <!-- Botones -->
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    <a href="@Url.Action("Index", "Prestamo")" class="btn btn-secondary">Cancelar</a>
+</form>
