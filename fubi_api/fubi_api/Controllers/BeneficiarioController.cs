@@ -56,10 +56,18 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
+<<<<<<< Updated upstream
                         Cedula = model.cedula,
                         Correo = model.correo,
                         Telefono = model.telefono,
                         Direccion = model.direccion
+=======
+                        Cedula = model.Cedula,
+                        Correo = model.Correo,
+                        Beneficiario=model.Beneficiario,
+                        Telefono = model.Telefono,
+                        Direccion = model.Direccion
+>>>>>>> Stashed changes
                     };
 
                     var result = await context.ExecuteAsync("CrearBeneficiario", parameters, commandType: CommandType.StoredProcedure);
@@ -99,6 +107,7 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
+<<<<<<< Updated upstream
                         id_beneficiario = model.id_beneficiario,
                         cedula = model.cedula,
                         correo = model.correo,
@@ -107,6 +116,13 @@ namespace fubi_api.Controllers
                         Activo = model.Activo,
                         beneficiario = model.beneficiario,
                         Nombre = model.Nombre,
+=======
+                        Cedula = model.Cedula,
+                        Correo = model.Correo,
+                        Beneficiario = model.Beneficiario,
+                        Telefono = model.Telefono,
+                        Direccion = model.Direccion
+>>>>>>> Stashed changes
                     };
 
                     var result = await context.ExecuteAsync("ActualizarBeneficiario", parameters, commandType: CommandType.StoredProcedure);
@@ -133,10 +149,10 @@ namespace fubi_api.Controllers
             }
         }
 
-        // Método para eliminar un beneficiario
-        [HttpDelete]
-        [Route("EliminarBeneficiario/{id}")]
-        public async Task<IActionResult> EliminarBeneficiario(int id)
+        // Método para deshabilitar un beneficiario
+        [HttpPut]
+        [Route("DeshabilitarBeneficiario/{Cedula}")]
+        public async Task<IActionResult> DeshabilitarBeneficiario(int Cedula)
         {
             var respuesta = new Respuesta();
 
@@ -144,12 +160,13 @@ namespace fubi_api.Controllers
             {
                 using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
-                    var result = await context.ExecuteAsync("EliminarBeneficiario", new { Id = id }, commandType: CommandType.StoredProcedure);
+                    // Llamada al procedimiento almacenado para deshabilitar el beneficiario
+                    var result = await context.ExecuteAsync("DeshabilitarBeneficiario", new NewRecord(Cedula), commandType: CommandType.StoredProcedure);
 
                     if (result > 0)
                     {
                         respuesta.Codigo = 0;
-                        respuesta.Mensaje = "Beneficiario eliminado correctamente.";
+                        respuesta.Mensaje = "Beneficiario deshabilitado correctamente.";
                         return Ok(respuesta);
                     }
                     else
@@ -163,10 +180,11 @@ namespace fubi_api.Controllers
             catch (Exception ex)
             {
                 respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error al eliminar beneficiario: {ex.Message}";
+                respuesta.Mensaje = $"Error al deshabilitar beneficiario: {ex.Message}";
                 return BadRequest(respuesta);
             }
         }
     }
-}
 
+    internal record NewRecord(int Id);
+}

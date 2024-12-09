@@ -1,59 +1,51 @@
-﻿@{
+﻿@model List<fubi_api.Models.Beneficiarios>
+
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
-@section Scripts {
-    <script src="~/js/Beneficiarios.js"></script> <!-- Ajusta si necesitas un archivo específico -->
-}
-
-@functions {
-    public string GetEstadoDescripcion(bool activo)
-    {
-        return activo ? "Activo" : "Inactivo";
-    }
 }
 
 <div class="card">
     <div class="card-body">
         <div class="d-flex justify-content-between">
             <h5 class="card-title">Lista de Beneficiarios</h5>
-            <a href="@Url.Action("CreateBeneficiario", "Beneficiarios")" class="btn-insertar">Crear Beneficiario</a>
+            <a href="@Url.Action("Create", "Beneficiario")" class="btn btn-primary">Crear Beneficiario</a>
         </div>
-        <div class="table-responsive">
-            <table id="beneficiarios-table" class="table text-nowrap align-middle mb-0">
-                <thead>
-                    <tr class="border-2 border-bottom border-primary border-0">
-                        <th>#</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cédula</th>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Cedula</td>
+                        <td>@item.Beneficiario</td>
+                        <td>@item.Correo</td>
+                        <td>@item.Telefono</td>
+                        <td>@item.Direccion</td>
+                        <td>@(item.Activo == true ? "Activo" : "Inactivo")</td>
+                        <td>
+                            <a href="@Url.Action("Edit", "Beneficiario", new { id = item.Id })" class="btn btn-warning btn-sm">Editar</a>
+                            <form method="post" action="@Url.Action("ChangeEstado", "Beneficiario")" style="display:inline;">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-sm @(item.Activo == true ? "btn-danger" : "btn-success")">
+                                    @(item.Activo == true ? "Deshabilitar" : "Habilitar")
+                                </button>
+                            </form>
+                        </td>
                     </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    @for (int i = 0; i < Model.Count; i++)
-                    {
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@Model[i].Nombre</td>
-                            <td>@Model[i].Correo</td>
-                            <td>@Model[i].Telefono</td>
-                            <td>@Model[i].Direccion</td>
-                            <td>@GetEstadoDescripcion(Model[i].Activo)</td>
-                            <td>
-                                <a href="@Url.Action("EditBeneficiario", "Beneficiarios", new { id = Model[i].Id })" class="btn btn-sm btn-primary">Editar</a>
-                                <form action="@Url.Action("DeleteBeneficiario", "Beneficiarios")" method="post" style="display:inline;">
-                                    <input type="hidden" name="id" value="@Model[i].Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
