@@ -2,13 +2,12 @@
 
 namespace fubi_client.Controllers
 {
-    public class DashboardController : Controller
+    public class ErrorController : Controller
     {
-        public IActionResult Index()
+        [Route("error/404")]
+        public IActionResult NotFound()
         {
             return View();
         }
-
-
     }
 }

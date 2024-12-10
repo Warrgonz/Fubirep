@@ -1,0 +1,81 @@
+﻿@{
+    Layout = "~/Views/Shared/Public_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/recuperar.css" />
+}
+
+<style>
+    .pcoded-main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw !important;
+        height: 100vh;
+        font-family: 'Segoe UI Variable Text';
+    }
+
+    .card {
+        width: 400px;
+        background-color: #131114;
+    }
+
+    .card-title{
+        color: #f5bc2a;
+    }
+
+    .card-subtitle{
+        color: white;
+    }
+
+    .btn-fubi{
+        width: 100%;
+        margin-top: 20px;
+        height: 40px;
+        background-color: #23b196;
+        color: azure;
+        border: none;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .btn-fubi:hover{
+       background-color: #f5b82a;
+    }
+
+    .regresar{
+        margin-top: 25px;
+        cursor: pointer;
+        color: #f5b82a;
+    }
+
+   .regresar:hover {
+      color: #23b196;
+      text-decoration: none;
+    }
+</style>
+
+<div class="card">
+  <div class="card-body">
+  <form asp-action="RecuperarAcceso" asp-controller="Home">
+    <div class="d-flex justify-content-center mb-2">
+      <img src="https://root-projects.s3.amazonaws.com/FUBIREDIP.png" class="fubi-logo" alt="Alternate Text" />
+    </div>
+        <div class="mb-3">
+            <h3 class="card-title mb-4">Recuperar Contraseña</h3>
+        <h6 class="card-subtitle mb-2">Escribe la dirección de correo electrónico asociado a su cuenta de Fubiredip.</h6>
+    </div>
+    <div>
+        <input type="text" class="form-control" placeholder="micorreo@fubiredip.com" />
+        <button type="submit" class="btn-fubi">Recuperar Contraseña</button>
+    </div>
+    <div>
+       <a href="@Url.Action("Index", "Home")">
+         <p class="text-center regresar">Regresar al menú principal</p>
+       </a>
+    </div>
+  </form>
+
+    </div>
+</div>

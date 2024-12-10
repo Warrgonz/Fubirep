@@ -13,8 +13,14 @@ namespace fubi_api.Models
         public string? telefono { get; set; }
         public string? ruta_imagen { get; set; }
         public DateTime? fecha_nacimiento { get; set; }
-        public int rol { get; set; }
-        public bool activo { get; set; }
+        public string? rol { get; set; }
+        public int activo { get; set; }
+
+        // Utils
+        public int id_rol { get; set; }
+        public string Token { get; set; } = string.Empty;
+
+
     }
 
 }

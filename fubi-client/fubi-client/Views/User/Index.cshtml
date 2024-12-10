@@ -17,6 +17,14 @@
             3 => "Colaborador"
         };
     }
+    public string GetStatus(int? activo)
+    {
+        return activo switch
+        {
+            0 => "Inactivo",
+            1 => "Activo",
+        };
+    }
 }
 
 <div class="card">
@@ -54,8 +62,8 @@
                             <td>
                                 <img src="@Model[i].ruta_imagen" width="80px" alt="Imagen del usuario" />
                             </td>
-                            <td>@GetRolDescription(Model[i].rol)</td>
-                            <td>@(Model[i].activo ? "Activo" : "Inactivo")</td>
+                            <td>@GetRolDescription(Model[i].id_rol)</td>
+                            <td>@GetStatus(Model[i].activo)</td>
                             <td>
                                 <a href="@Url.Action("UpdateUser","User", new { cedula = Model[i].cedula })" class="btn">
                                     <i class="fa fa-edit" style="font-size:1.6em; color: #eaaa27;"></i>

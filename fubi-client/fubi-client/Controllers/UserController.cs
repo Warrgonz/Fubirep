@@ -4,6 +4,7 @@ using fubi_client.Models;
 using System.Text.Json;
 using System.Reflection;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace fubi_client.Controllers
 {
@@ -16,6 +17,19 @@ namespace fubi_client.Controllers
         {
             _http = http;
             _conf = conf;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var sesionData = HttpContext.Session.GetInt32("RolUsuario");
+
+            if (sesionData == null || sesionData != 2)
+            {
+                // Redirige si el usuario no tiene el rol adecuado
+                context.Result = RedirectToAction("NotFound", "Error");
+            }
+
+            base.OnActionExecuting(context);
         }
 
         public IActionResult Index()

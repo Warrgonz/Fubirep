@@ -14,6 +14,10 @@ using Amazon.S3.Model;
 using static System.Net.WebRequestMethods;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using fubi_api.Utils.Auth;
 
 
 //using Firebase.Auth;
@@ -26,12 +30,15 @@ namespace fubi_api.Controllers
     {
         private readonly IConfiguration _conf;
         private readonly IBucket _bucket;
+        private readonly IAuth _auth;
 
-        public UserController(IConfiguration conf, IBucket bucket)
+        public UserController(IConfiguration conf, IBucket bucket, IAuth auth)
         {
             _conf = conf;
             _bucket = bucket;
+            _auth = auth;
         }
+
 
         [HttpGet]
         [Route("ObtenerUsuarios")]
@@ -76,7 +83,7 @@ namespace fubi_api.Controllers
 
                 // Generar contraseña aleatoria
                 var randomPassword = GenerateRandomPassword(8);
-                var encryptedPassword = EncryptPassword(randomPassword);
+                var encryptedPassword = _auth.Hashear(randomPassword);
 
                 // Guardar en la base de datos sin imagen, para obtener el userId
                 using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
@@ -92,7 +99,7 @@ namespace fubi_api.Controllers
                         Telefono = model.telefono,
                         FechaNacimiento = model.fecha_nacimiento,
                         RutaImagen = "",  
-                        Rol = model.rol
+                        Rol = model.id_rol
                     };
 
                     // Aquí ejecutamos el procedimiento almacenado que crea el usuario

@@ -39,14 +39,14 @@
                 <div class="">
                     <div class="main-menu-header" style="background-color: #9aba99">
                        <img class="img-radius"
-                             src="~/images/img-profile.jpg"
+                             src="@Context.Session.GetString("RutaImagen")"
                               alt="User-Profile-Image" />
                         <div class="user-details" id="more-details">
                             <!--Aquí va el nombre del viejo-->
-                            <span class="text-dark">Jose Pablo Solís Rodríguez</span>
+                            <span class="text-dark">@Context.Session.GetString("NombreUsuario") @Context.Session.GetString("ApellidoUsuario")</span>
                             <!--Aquí va el rol-->
                             <div class="text-dark">
-                                Administrador<ion-icon name="chevron-down-outline"></ion-icon>
+                                @Context.Session.GetString("RolNombre") <ion-icon name="chevron-down-outline"></ion-icon>
                             </div>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                                 <a href="user-profile.html"><ion-icon name="settings-outline"></ion-icon>Mi perfil</a>
                             </li>
                             <li class="list-group-item">
-                                <a href="auth-normal-sign-in.html"><ion-icon name="log-out-outline"></ion-icon>Cerrar sesión</a>
+                                <a href="@Url.Action("CerrarSesion","Home")"><ion-icon name="log-out-outline"></ion-icon>Cerrar sesión</a>
                             </li>
                         </ul>
                     </div>
@@ -71,11 +71,13 @@
                             <span class="pcoded-micon"><ion-icon name="home-outline"></ion-icon></span><span class="pcoded-mtext">Inicio</span>
                         </a>
                     </li>
+                    @if (Context.Session.GetInt32("RolUsuario") == 2){
                     <li class="nav-item">
                         <a href="@Url.Action("Index", "User")" class="nav-link">
                             <span class="pcoded-micon"><ion-icon name="person-outline"></ion-icon></span><span class="pcoded-mtext">Usuarios</span>
                         </a>
                     </li>
+                    }
                     <li class="nav-item">
                         <a href="#!" class="nav-link">
                             <span class="pcoded-micon"><ion-icon name="gift-outline"></ion-icon></span><span class="pcoded-mtext">Donaciones</span>
@@ -143,6 +145,7 @@
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.js"></script>
     <script src="https://kit.fontawesome.com/4ccaae5e72.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+    <script src="~/js/Session.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

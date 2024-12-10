@@ -8,12 +8,17 @@ namespace fubi_client.Models
         public string? nombre { get; set; }
         public string? primer_apellido { get; set; }
         public string? segundo_apellido { get; set; }
+        public string? contrasena { get; set; }
         public string? correo { get; set; }
         public string? telefono { get; set; }
         public string? ruta_imagen { get; set; }
         public DateTime? fecha_nacimiento { get; set; } 
-        public int rol { get; set; }
-        public bool activo { get; set; }
+        public string? rol { get; set; }
+        public int activo { get; set; }
+
+        // Utils
+        public int id_rol { get; set; }
+        public string Token { get; set; } = string.Empty;
 
     }
 

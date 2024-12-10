@@ -66,19 +66,23 @@ h2 {
 
 .el-hechicero input {
     border-radius: 5px 0px 0px 5px;
+    height: 41px;
 }
 
 .el-hechicero a ion-icon {
    color: #fff;
-   width: 19px;
+   width: 29px;
    background-color: #23b196;
    height: 39px;
    margin-top: 5px;
    border-radius: 0px 5px 5px 0px;
    }
 
+#eyeIcon{
+    padding: 1px;
+}
 
-.fubi-logo{
+.fubi-logo {
     width: 60%;
 }
 
