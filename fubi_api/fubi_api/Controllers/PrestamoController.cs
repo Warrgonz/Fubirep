@@ -121,6 +121,102 @@ public class PrestamosController : ControllerBase
             }
         }
     }
+
+    [HttpPut("ActualizarPrestamo")]
+    public async Task<IActionResult> ActualizarPrestamo([FromBody] Prestamo prestamo)
+    {
+        var respuesta = new Respuesta();
+
+        try
+        {
+            using (var connection = new SqlConnection(_conf.GetConnectionString("DefaultConnection")))
+            {
+                // Parámetros del procedimiento almacenado
+                var parameters = new
+                {
+                    IdPrestamo = prestamo.id_prestamo,
+                    IdBeneficiario = prestamo.id_beneficiario,
+                    IdEncargado = prestamo.id_encargado,
+                    IdInventario = prestamo.id_inventario,
+                    Cantidad = prestamo.cantidad,
+                    FechaLimiteDevolucion = prestamo.fecha_limite_devolución,
+                    IdEstado = prestamo.id_estado
+                };
+
+                // Ejecutar el Stored Procedure
+                var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                    "ActualizarPrestamo",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                // Manejar la respuesta del Stored Procedure
+                if (result != null && result.Mensaje != null)
+                {
+                    // Éxito
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = result.Mensaje;
+                    return Ok(respuesta);
+                }
+                else if (result?.MensajeError != null)
+                {
+                    // Error controlado desde el Stored Procedure
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = result.MensajeError;
+                    return BadRequest(respuesta);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            respuesta.Codigo = -2;
+            respuesta.Mensaje = $"Error inesperado: {ex.Message}";
+            return StatusCode(500, respuesta);
+        }
+
+        respuesta.Codigo = -1;
+        respuesta.Mensaje = "Error desconocido al actualizar el préstamo.";
+        return BadRequest(respuesta);
+    }
+
+
+    [HttpDelete]
+    [Route("EliminarPrestamo/{id}")]
+    public IActionResult EliminarPrestamo(int id)
+    {
+        var respuesta = new Respuesta();
+
+        try
+        {
+            using (var connection = new SqlConnection(_conf.GetConnectionString("DefaultConnection")))
+            {
+                var result = connection.Execute(
+                    "DELETE FROM prestamos WHERE id_prestamo = @IdPrestamo",
+                    new { IdPrestamo = id });
+
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = "Préstamo eliminado correctamente.";
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No se encontró el préstamo.";
+                }
+            }
+
+            return Ok(respuesta);
+        }
+        catch (Exception ex)
+        {
+            respuesta.Codigo = -2;
+            respuesta.Mensaje = $"Error inesperado: {ex.Message}";
+            return StatusCode(500, respuesta);
+        }
+    }
+
+
 }
 
 

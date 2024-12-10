@@ -32,7 +32,7 @@
     <form asp-action="CreateBeneficiarios" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="cedula" class="form-control">
+            <input type="text" asp-for="Cedula" class="form-control">
 
             @if (ViewBag.ErrorMessage != null)
             {
@@ -41,24 +41,24 @@
         </div>
         <div class="mb-3">
             <label class="form-label">id_beneficiario<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="id_beneficiario" class="form-control">
+            <input type="text" asp-for="Id" class="form-control">
         </div>
         
         <div class="mb-3">
             <label class="form-label">cedula<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="cedula" class="form-control">
+            <input type="text" asp-for="Cedula" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
-            <input type="correo" asp-for="correo" class="form-control">
+            <input type="correo" asp-for="Correo" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="telefono" class="form-control">
+            <input type="text" asp-for="Telefono" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="direccion" class="form-control">
+            <input type="text" asp-for="Direccion" class="form-control">
         </div>
         
        

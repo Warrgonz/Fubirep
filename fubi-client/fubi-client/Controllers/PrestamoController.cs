@@ -1,4 +1,6 @@
-﻿using fubi_client.Models;
+﻿
+
+using fubi_client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
@@ -56,7 +58,7 @@ namespace fubi_client.Controllers
 
                 if (resultBeneficiarios != null && resultBeneficiarios.Codigo == 0)
                 {
-                    ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)resultBeneficiarios.Contenido);
+                    ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<BeneficiarioPrestamo>>((JsonElement)resultBeneficiarios.Contenido);
                 }
 
                 // Obtenemos todos los usuarios sin filtrar por rol
@@ -82,9 +84,9 @@ namespace fubi_client.Controllers
                 // Simulación de estados del préstamo
                 ViewBag.Estados = new List<dynamic>
         {
-            new { Id = 1, Nombre = "Pendiente" },
-            new { Id = 2, Nombre = "Entregado" },
-            new { Id = 3, Nombre = "Devuelto" }
+            new { Id = 1, Nombre = "dentro del plazo" },
+            new { Id = 2, Nombre = "atrasado" },
+            new { Id = 3, Nombre = "devuelto" }
         };
 
                 return View();
@@ -93,27 +95,47 @@ namespace fubi_client.Controllers
 
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> CreatePrestamo(Prestamo model)
         {
             using (var client = _http.CreateClient())
             {
-                var url = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/CrearPrestamo";
-                var prestamoContent = JsonContent.Create(model);
-
-                var response = await client.PostAsync(url, prestamoContent);
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    return RedirectToAction("Index");
+                    // URL de la API
+                    var url = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/CrearPrestamo";
+
+                    // Serializar y enviar el modelo
+                    var prestamoContent = JsonContent.Create(model);
+                    var response = await client.PostAsync(url, prestamoContent);
+
+                    // Si el API responde exitosamente
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Préstamo creado exitosamente.";
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        // Leer el mensaje de error del API
+                        var result = await response.Content.ReadFromJsonAsync<Respuesta>();
+                        ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error al crear el préstamo.";
+
+                        // Recargar datos para la vista
+                        await LoadCreatePrestamoData();
+                        return View(model); // Devolver la vista con los datos actuales
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<Respuesta>();
-                    ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error interno";
-                    return View(model);
+                    // Capturar errores inesperados
+                    ViewBag.ErrorMessage = $"Error inesperado: {ex.Message}";
+                    await LoadCreatePrestamoData();
+                    return View(model); // Devolver la vista con los datos actuales
                 }
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> EditPrestamo(int id)
@@ -140,9 +162,8 @@ namespace fubi_client.Controllers
 
                     if (resultBeneficiarios != null && resultBeneficiarios.Codigo == 0)
                     {
-                        ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)resultBeneficiarios.Contenido);
+                        ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<BeneficiarioPrestamo>>((JsonElement)resultBeneficiarios.Contenido);
                     }
-
                     // Obtenemos todos los usuarios sin filtrar por rol
                     string urlUsuarios = _conf.GetSection("Variables:UrlApi").Value + "User/ObtenerUsuarios";
                     var responseUsuarios = client.GetAsync(urlUsuarios).Result;
@@ -166,9 +187,9 @@ namespace fubi_client.Controllers
                     // Simulación de estados del préstamo
                     ViewBag.Estados = new List<dynamic>
         {
-            new { Id = 1, Nombre = "Pendiente" },
-            new { Id = 2, Nombre = "Entregado" },
-            new { Id = 3, Nombre = "Devuelto" }
+            new { Id = 1, Nombre = "dentro del plazo" },
+            new { Id = 2, Nombre = "atrasado" },
+            new { Id = 3, Nombre = "devuelto" }
         };
 
                     return View(prestamo);
@@ -181,14 +202,13 @@ namespace fubi_client.Controllers
             }
         }
 
-        // POST: Guardar cambios del préstamo
+        
         [HttpPost]
         public async Task<IActionResult> EditPrestamo(PrestamoDetalle model)
         {
-            
             using (var client = _http.CreateClient())
             {
-                string apiUrl = _conf.GetSection("Variables:UrlApi").Value + "Prestamo/ActualizarPrestamo";
+                string apiUrl = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/ActualizarPrestamo";
 
                 try
                 {
@@ -208,36 +228,162 @@ namespace fubi_client.Controllers
                     var jsonContent = new StringContent(JsonSerializer.Serialize(prestamo), Encoding.UTF8, "application/json");
                     var response = await client.PutAsync(apiUrl, jsonContent);
 
+                    // Verificar respuesta exitosa
                     if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Préstamo actualizado exitosamente.";
                         return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        // Leer el mensaje de error desde el API
+                        var result = await response.Content.ReadFromJsonAsync<Respuesta>();
+                        ViewBag.ErrorMessage = result?.Mensaje ?? "Error desconocido al actualizar el préstamo.";
 
-                    ViewBag.ErrorMessage = "Error al actualizar el préstamo.";
-                    return View(model);
+                        // Recargar los datos para la vista
+                        await LoadEditPrestamoData(model.LoanID);
+                        return View(model);
+                    }
                 }
                 catch (Exception ex)
                 {
+                    // Manejo de errores generales
                     ViewBag.ErrorMessage = $"Error inesperado: {ex.Message}";
+
+                    // Recargar los datos para la vista
+                    await LoadEditPrestamoData(model.LoanID);
                     return View(model);
                 }
             }
         }
+
+
         [HttpPost]
         public async Task<IActionResult> DeletePrestamo(int id)
         {
             using (var client = _http.CreateClient())
             {
-                var url = _conf.GetSection("Variables:UrlApi").Value + $"Prestamo/EliminarPrestamo/{id}";
-                var response = await client.DeleteAsync(url);
+                string url = _conf.GetSection("Variables:UrlApi").Value + $"Prestamos/EliminarPrestamo/{id}";
 
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    return RedirectToAction("Index");
+                    var response = await client.DeleteAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Préstamo eliminado correctamente.";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Error al eliminar el préstamo.";
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    ViewBag.ErrorMessage = "Hubo un error al eliminar el préstamo.";
-                    return RedirectToAction("Index");
+                    TempData["ErrorMessage"] = $"Error inesperado: {ex.Message}";
                 }
+
+                return RedirectToAction("Index");
+            }
+        }
+
+
+
+        private async Task LoadCreatePrestamoData()
+        {
+            using (var client = _http.CreateClient())
+            {
+                string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
+
+                // Beneficiarios
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                if (responseBeneficiarios.IsSuccessStatusCode)
+                {
+                    var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultBeneficiarios?.Codigo == 0)
+                        ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<BeneficiarioPrestamo>>((JsonElement)resultBeneficiarios.Contenido);
+                }
+
+                // Encargados
+                var responseUsuarios = await client.GetAsync($"{apiUrl}User/ObtenerUsuarios");
+                if (responseUsuarios.IsSuccessStatusCode)
+                {
+                    var resultUsuarios = await responseUsuarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultUsuarios?.Codigo == 0)
+                        ViewBag.Encargados = JsonSerializer.Deserialize<List<User>>((JsonElement)resultUsuarios.Contenido);
+                }
+
+                // Inventarios
+                var responseInventarios = await client.GetAsync($"{apiUrl}Inventario/ObtenerInventarios");
+                if (responseInventarios.IsSuccessStatusCode)
+                {
+                    var resultInventarios = await responseInventarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultInventarios?.Codigo == 0)
+                        ViewBag.Inventarios = JsonSerializer.Deserialize<List<Inventario>>((JsonElement)resultInventarios.Contenido);
+                }
+
+                // Estados del préstamo
+                ViewBag.Estados = new List<dynamic>
+        {
+            new { Id = 1, Nombre = "dentro del plazo" },
+            new { Id = 2, Nombre = "atrasado" },
+            new { Id = 3, Nombre = "devuelto" }
+        };
+            }
+        }
+
+
+        private async Task LoadEditPrestamoData(int loanId)
+        {
+            using (var client = _http.CreateClient())
+            {
+                string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
+
+                // Obtener el préstamo actual
+                var responsePrestamo = await client.GetAsync($"{apiUrl}Prestamos/ObtenerPrestamo/{loanId}");
+                if (responsePrestamo.IsSuccessStatusCode)
+                {
+                    var prestamo = await responsePrestamo.Content.ReadFromJsonAsync<PrestamoDetalle>();
+                    if (prestamo != null)
+                    {
+                        ViewBag.Prestamo = prestamo; // Mantener el préstamo actual
+                    }
+                }
+
+                // Beneficiarios
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                if (responseBeneficiarios.IsSuccessStatusCode)
+                {
+                    var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultBeneficiarios?.Codigo == 0)
+                        ViewBag.Beneficiarios = JsonSerializer.Deserialize<List<BeneficiarioPrestamo>>((JsonElement)resultBeneficiarios.Contenido);
+                }
+
+                // Encargados
+                var responseUsuarios = await client.GetAsync($"{apiUrl}User/ObtenerUsuarios");
+                if (responseUsuarios.IsSuccessStatusCode)
+                {
+                    var resultUsuarios = await responseUsuarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultUsuarios?.Codigo == 0)
+                        ViewBag.Encargados = JsonSerializer.Deserialize<List<User>>((JsonElement)resultUsuarios.Contenido);
+                }
+
+                // Inventarios
+                var responseInventarios = await client.GetAsync($"{apiUrl}Inventario/ObtenerInventarios");
+                if (responseInventarios.IsSuccessStatusCode)
+                {
+                    var resultInventarios = await responseInventarios.Content.ReadFromJsonAsync<Respuesta>();
+                    if (resultInventarios?.Codigo == 0)
+                        ViewBag.Inventarios = JsonSerializer.Deserialize<List<Inventario>>((JsonElement)resultInventarios.Contenido);
+                }
+
+                // Estados del préstamo
+                ViewBag.Estados = new List<dynamic>
+        {
+            new { Id = 1, Nombre = "dentro del plazo" },
+            new { Id = 2, Nombre = "atrasado" },
+            new { Id = 3, Nombre = "devuelto" }
+        };
             }
         }
 

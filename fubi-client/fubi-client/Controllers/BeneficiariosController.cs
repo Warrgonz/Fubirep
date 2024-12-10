@@ -4,7 +4,7 @@ using fubi_client.Models;
 using System.Text.Json;
 using System.Reflection;
 using System.Net.Http.Headers;
-using fubi_api.Models;
+using fubi_client.Models;
 
 namespace fubi_client.Controllers
 {
@@ -31,7 +31,7 @@ namespace fubi_client.Controllers
 
                 if (result != null && result.Codigo == 0 && result.Contenido != null)
                 {
-                    var datosContenido = JsonSerializer.Deserialize<List<fubi_api.Models.Beneficiarios>>((JsonElement)result.Contenido);
+                    var datosContenido = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
                     return View(new List<Beneficiarios>(datosContenido));
                 }
 
@@ -80,7 +80,7 @@ namespace fubi_client.Controllers
 
                 if (result != null && result.Codigo == 0)
                 {
-                    var beneficiario = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido)?.FirstOrDefault(b => b.id_beneficiario == id);
+                    var beneficiario = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido)?.FirstOrDefault(b => b.Id == id);
                     return View(beneficiario);
                 }
 

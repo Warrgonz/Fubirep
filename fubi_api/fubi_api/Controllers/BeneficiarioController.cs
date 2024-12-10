@@ -56,18 +56,12 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
-<<<<<<< Updated upstream
+
                         Cedula = model.cedula,
                         Correo = model.correo,
                         Telefono = model.telefono,
                         Direccion = model.direccion
-=======
-                        Cedula = model.Cedula,
-                        Correo = model.Correo,
-                        Beneficiario=model.Beneficiario,
-                        Telefono = model.Telefono,
-                        Direccion = model.Direccion
->>>>>>> Stashed changes
+
                     };
 
                     var result = await context.ExecuteAsync("CrearBeneficiario", parameters, commandType: CommandType.StoredProcedure);
@@ -107,7 +101,7 @@ namespace fubi_api.Controllers
                 {
                     var parameters = new
                     {
-<<<<<<< Updated upstream
+
                         id_beneficiario = model.id_beneficiario,
                         cedula = model.cedula,
                         correo = model.correo,
@@ -116,13 +110,7 @@ namespace fubi_api.Controllers
                         Activo = model.Activo,
                         beneficiario = model.beneficiario,
                         Nombre = model.Nombre,
-=======
-                        Cedula = model.Cedula,
-                        Correo = model.Correo,
-                        Beneficiario = model.Beneficiario,
-                        Telefono = model.Telefono,
-                        Direccion = model.Direccion
->>>>>>> Stashed changes
+
                     };
 
                     var result = await context.ExecuteAsync("ActualizarBeneficiario", parameters, commandType: CommandType.StoredProcedure);
