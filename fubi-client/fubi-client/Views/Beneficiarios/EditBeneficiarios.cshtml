@@ -1,6 +1,4 @@
-﻿
-
-    @model fubi_client.Models.Beneficiarios
+﻿@model fubi_client.Models.Beneficiarios
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -24,50 +22,50 @@
     {
         <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
             @ViewBag.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
     <h2>Editar Beneficiario</h2>
 
     <form asp-action="EditBeneficiarios" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
-        <input type="hidden" asp-for="Id" /> <!-- Campo oculto para mantener el ID del beneficiario -->
-
         <div class="mb-3">
-            <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Cedula" class="form-control" readonly> <!-- Campo de solo lectura -->
+            <label class="form-label">Cedula</label>
+            <input type="text" asp-for="cedula" class="form-control" readonly>
+            <p>Este campo solo puede ser visualizado</p>
         </div>
         <div class="mb-3">
             <label class="form-label">Beneficiario<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Beneficiario" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
-            <input type="email" asp-for="Correo" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Telefono" class="form-control">
+            <input type="text" asp-for="beneficiario" class="form-control">
         </div>
         <div class="mb-3">
             <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Direccion" class="form-control">
+            <textarea asp-for="direccion" class="form-control"></textarea>
         </div>
-       
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" asp-for="telefono" class="form-control">
+        </div>
+        
+        
+        
         <div class="pt-3">
-            <input type="submit" class="btn btn-success btn-md mr-2" value="Guardar Cambios">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Actualizar">
             <a href="@Url.Action("Index", "Beneficiarios")" class="btn btn-danger text-light btn-md">Cancelar</a>
         </div>
     </form>
 </section>
 
 <script>
+
     function sleep(time) {
         return new Promise((resolve) => setTimeout(resolve, time))
     }
     (() => {
         let alert = document.getElementById('error-message');
         if (alert != null) {
-           
-
-}
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })()
+</script>

@@ -1,31 +1,85 @@
-﻿// Data table con los beneficiarios
-$(document).ready(function () {
-    const beneficiarios = [
-        { id: 1, cedula: 12345678, beneficiario: "Juan Pérez", correo: "juan@mail.com", telefono: "88888888", direccion: "San José", activo: true },
-        { id: 2, cedula: 87654321, beneficiario: "Ana López", correo: "ana@mail.com", telefono: "77777777", direccion: "Heredia", activo: false },
-    ];
-
-    $('#user-table').DataTable({
-        data: beneficiarios.map(b => [
-            b.id,
-            b.cedula,
-            b.beneficiario,
-            b.correo,
-            b.telefono,
-            b.direccion,
-            b.activo ? "Activo" : "Inactivo"
-        ]),
-        columns: [
-            { title: "#" },
-            { title: "Cédula" },
-            { title: "Beneficiario" },
-            { title: "Correo" },
-            { title: "Teléfono" },
-            { title: "Dirección" },
-            { title: "Estado" },
-        ],
+﻿$(document).ready(function () {
+    $('#beneficiarios-table').DataTable({
         language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json"
+            url: '//cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json'
+        },
+        columnDefs: [
+            { className: "dt-head-center", targets: "_all" } // Centra los encabezados de todas las columnas
+        ]
+    });
+});
+
+// Función para desactivar un beneficiario
+document.addEventListener('DOMContentLoaded', () => {
+    const beneficiariosTable = document.querySelector('#beneficiarios-table');
+
+    if (!beneficiariosTable) {
+        console.error('Error: No se encontró la tabla con ID "beneficiarios-table".');
+        return;
+    }
+
+    beneficiariosTable.addEventListener('click', async (event) => {
+        if (event.target.classList.contains('btn-desactivar')) {
+            const id = event.target.dataset.id;
+
+            if (!id) {
+                console.error('Error: No se encontró el ID del beneficiario en el atributo data-id.');
+                return;
+            }
+
+            console.log(`Intentando desactivar beneficiario con ID: ${id}`);
+
+            const result = await Swal.fire({
+                title: `¿Deseas desactivar al beneficiario con ID ${id}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, desactivar',
+                cancelButtonText: 'Cancelar',
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    console.log(`Enviando solicitud a: /Beneficiarios/Desactivar/${id}`);
+                    const response = await fetch(`/Beneficiarios/Desactivar/${id}`, {
+                        method: 'POST',
+                    });
+
+                    if (!response.ok) {
+                        console.error(`Error en la respuesta del servidor. Código: ${response.status}`);
+                        Swal.fire({
+                            title: 'Error',
+                            text: `Ocurrió un error en el servidor (Código: ${response.status})`,
+                            icon: 'error',
+                        });
+                        return;
+                    }
+
+                    const data = await response.json();
+                    console.log('Respuesta del servidor:', data);
+
+                    if (data && data.codigo === 0) {
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: 'Beneficiario desactivado exitosamente.',
+                            icon: 'success',
+                        });
+                        location.reload();
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.mensaje || 'No se pudo desactivar el beneficiario.',
+                            icon: 'error',
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error de red o en la solicitud:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un problema al conectar con el servidor.',
+                        icon: 'error',
+                    });
+                }
+            }
         }
     });
 });
