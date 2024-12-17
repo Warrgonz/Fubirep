@@ -11,6 +11,8 @@
         public string? direccion { get; set; }    // Dirección física
         public bool? activo { get; set; }         // Si el beneficiario se encuentra activo o no
 
+        public string? nombre { get; set; }
+
 
     }
 }
