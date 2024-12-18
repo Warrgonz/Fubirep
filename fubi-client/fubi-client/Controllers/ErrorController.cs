@@ -9,5 +9,11 @@ namespace fubi_client.Controllers
         {
             return View();
         }
+
+        [Route("error/401")]
+        public IActionResult Gone()
+        {
+            return View();
+        }
     }
 }

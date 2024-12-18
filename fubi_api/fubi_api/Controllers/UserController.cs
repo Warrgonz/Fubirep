@@ -99,7 +99,7 @@ namespace fubi_api.Controllers
                         Telefono = model.telefono,
                         FechaNacimiento = model.fecha_nacimiento,
                         RutaImagen = "",  
-                        Rol = model.id_rol
+                        Rol = model.rol
                     };
 
                     // Aquí ejecutamos el procedimiento almacenado que crea el usuario
@@ -214,6 +214,58 @@ namespace fubi_api.Controllers
         }
 
         [HttpPost]
+        [Route("UpdateUserImage/{cedula}")]
+        public async Task<IActionResult> UpdateUserImage([FromRoute] string cedula, IFormFile file)
+        {
+            var respuesta = new Respuesta();
+
+            try
+            {
+                // Validar si se envió un archivo
+                if (file == null || file.Length == 0)
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No se ha enviado una imagen válida.";
+                    return BadRequest(respuesta);
+                }
+
+                // Subir archivo a S3 y obtener la URL
+                var fileUrl = await _bucket.UpdateFileAsync(file, "avatar", cedula);
+
+                // Actualizar la ruta de la imagen en la base de datos
+                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    var parameters = new
+                    {
+                        Cedula = cedula,
+                        RutaImagen = fileUrl
+                    };
+
+                    var updateResult = await context.ExecuteAsync("ActualizarRutaImagen", parameters, commandType: CommandType.StoredProcedure);
+
+                    if (updateResult > 0)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Mensaje = "Imagen actualizada correctamente.";
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "No se pudo actualizar la imagen del usuario.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta.Codigo = -1;
+                respuesta.Mensaje = $"Error al subir la imagen: {ex.Message}";
+            }
+
+            return Ok(respuesta);
+        }
+
+
+        [HttpPost]
         [Route("DesactivarUsuario/{cedula}")]
         public IActionResult DesactivarUsuario(string cedula)
         {
@@ -325,7 +377,7 @@ namespace fubi_api.Controllers
 
         [HttpPut]
         [Route("UpdateUser")]
-        public IActionResult ActualizarUsuario(User model)
+        public IActionResult ActualizarUsuario([FromBody] User model)
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
