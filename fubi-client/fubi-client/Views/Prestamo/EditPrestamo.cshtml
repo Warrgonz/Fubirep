@@ -31,7 +31,7 @@
     </div>
 
     <!-- Encargado -->
-    <div class="mb-3">
+    @* <div class="mb-3">
         <label class="form-label">Encargado</label>
         <select asp-for="ManagerName" class="form-control">
             <option value="">Seleccione un encargado</option>
@@ -42,7 +42,7 @@
                 </option>
             }
         </select>
-    </div>
+    </div> *@
 
     <!-- Inventario -->
     <div class="mb-3">
@@ -61,7 +61,7 @@
     <!-- Cantidad -->
     <div class="mb-3">
         <label class="form-label">Cantidad</label>
-        <input asp-for="LoanQuantity" class="form-control" />
+        <input asp-for="LoanQuantity" class="form-control" min="1" />
     </div>
 
     <!-- Fecha Límite de Devolución -->

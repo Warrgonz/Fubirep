@@ -1,9 +1,10 @@
 ﻿using Dapper;
-using fubi_api.Models;
+using fubi_client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using System;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Linq;
 
 namespace fubi_api.Controllers
 {
@@ -18,7 +19,6 @@ namespace fubi_api.Controllers
             _conf = conf;
         }
 
-        // Método para consultar todos los beneficiarios
         [HttpGet]
         [Route("ObtenerBeneficiarios")]
         public IActionResult ConsultarBeneficiarios()
@@ -43,136 +43,142 @@ namespace fubi_api.Controllers
             }
         }
 
-        // Método para crear un beneficiario
         [HttpPost]
-        [Route("CrearBeneficiario")]
-        public async Task<IActionResult> CrearBeneficiario([FromBody] Beneficiarios model)
+        [Route("CreateBeneficiarios")]
+        public IActionResult CreateBeneficiarios([FromBody] Beneficiarios beneficiarios)
         {
             var respuesta = new Respuesta();
 
             try
             {
+                if (!string.IsNullOrEmpty(beneficiarios.beneficiario) && !string.IsNullOrEmpty(beneficiarios.direccion) )
+                {
+                }
+                else
+                {
+                    respuesta.Codigo = -3;
+                    respuesta.Mensaje = "Los campos obligatorios no pueden estar vacíos.";
+                    return BadRequest(respuesta);
+                }
+
                 using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
                     var parameters = new
                     {
-
-                        Cedula = model.cedula,
-                        Correo = model.correo,
-                        Telefono = model.telefono,
-                        Direccion = model.direccion
-
+                        IdBeneficiario = beneficiarios.id_beneficiario,
+                        Beneficiario= beneficiarios.beneficiario,
+                        Cedula = beneficiarios.cedula,
+                        Direccion = beneficiarios.direccion,
+                        Telefono = beneficiarios.telefono,
+                        Activo = beneficiarios.activo
                     };
 
-                    var result = await context.ExecuteAsync("CrearBeneficiario", parameters, commandType: CommandType.StoredProcedure);
+                    var result = context.Execute("CreateBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
 
                     if (result > 0)
                     {
                         respuesta.Codigo = 0;
                         respuesta.Mensaje = "Beneficiario creado correctamente.";
-                        return Ok(respuesta);
                     }
                     else
                     {
                         respuesta.Codigo = -1;
                         respuesta.Mensaje = "No se pudo registrar el beneficiario.";
-                        return BadRequest(respuesta);
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Number == 2627 || ex.Number == 2601) // Error de clave única
+                {
+                    respuesta.Codigo = -2;
+                    respuesta.Mensaje = "El beneficiario ya está registrado en el sistema.";
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = $"Error al registrar el beneficiario: {ex.Message}";
+                }
+                return BadRequest(respuesta);
             }
             catch (Exception ex)
             {
                 respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error al crear beneficiario: {ex.Message}";
+                respuesta.Mensaje = $"Error inesperado: {ex.Message}";
                 return BadRequest(respuesta);
             }
+
+            return Ok(respuesta);
         }
 
-        // Método para actualizar un beneficiario
         [HttpPut]
-        [Route("ActualizarBeneficiario")]
-        public async Task<IActionResult> ActualizarBeneficiario([FromBody] Beneficiarios model)
+        [Route("EditBeneficiarios")]
+        public IActionResult EditBeneficiarios([FromBody] Beneficiarios beneficiarios)
         {
             var respuesta = new Respuesta();
 
-            try
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                var parameters = new
                 {
-                    var parameters = new
-                    {
+                    IdBeneficiario = beneficiarios.id_beneficiario,
+                    Beneficiario = beneficiarios.beneficiario,
+                    Cedula = beneficiarios.cedula,
+                    Direccion = beneficiarios.direccion,
+                    Telefono = beneficiarios.telefono,
+                    Activo = beneficiarios.activo,
+                };
 
-                        id_beneficiario = model.id_beneficiario,
-                        cedula = model.cedula,
-                        correo = model.correo,
-                        telefono = model.telefono,
-                        direccion = model.direccion,
-                        Activo = model.Activo,
-                        beneficiario = model.beneficiario,
-                        Nombre = model.Nombre,
+                var result = context.Execute("EditBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
 
-                    };
-
-                    var result = await context.ExecuteAsync("ActualizarBeneficiario", parameters, commandType: CommandType.StoredProcedure);
-
-                    if (result > 0)
-                    {
-                        respuesta.Codigo = 0;
-                        respuesta.Mensaje = "Beneficiario actualizado correctamente.";
-                        return Ok(respuesta);
-                    }
-                    else
-                    {
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = "No se encontró el beneficiario.";
-                        return NotFound(respuesta);
-                    }
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = "Beneficiario se ha editado correctamente.";
                 }
-            }
-            catch (Exception ex)
-            {
-                respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error al actualizar beneficiario: {ex.Message}";
-                return BadRequest(respuesta);
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No se pudo editar el beneficiario.";
+                }
+
+                return Ok(respuesta);
             }
         }
 
-        // Método para deshabilitar un beneficiario
         [HttpPut]
-        [Route("DeshabilitarBeneficiario/{Cedula}")]
-        public async Task<IActionResult> DeshabilitarBeneficiario(int Cedula)
+        [Route("DeshabilitarBeneficiarios/{cedula}")]
+        public IActionResult DeshabilitarBeneficiarios(string cedula)
         {
             var respuesta = new Respuesta();
 
-            try
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
-                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
-                {
-                    // Llamada al procedimiento almacenado para deshabilitar el beneficiario
-                    var result = await context.ExecuteAsync("DeshabilitarBeneficiario", new NewRecord(Cedula), commandType: CommandType.StoredProcedure);
+                var parameters = new { Cedula = cedula };
+                var result = context.Execute("DeshabilitarBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
 
-                    if (result > 0)
-                    {
-                        respuesta.Codigo = 0;
-                        respuesta.Mensaje = "Beneficiario deshabilitado correctamente.";
-                        return Ok(respuesta);
-                    }
-                    else
-                    {
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = "No se encontró el beneficiario.";
-                        return NotFound(respuesta);
-                    }
+                if (result > 0)
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Mensaje = "Beneficiario deshabilitado correctamente.";
                 }
-            }
-            catch (Exception ex)
-            {
-                respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error al deshabilitar beneficiario: {ex.Message}";
-                return BadRequest(respuesta);
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No se pudo deshabilitar el beneficiario.";
+                }
+
+                return Ok(respuesta);
             }
         }
     }
 
-    internal record NewRecord(int Id);
+    
+
+    public class Respuesta
+    {
+        public int Codigo { get; set; }
+        public string Mensaje { get; set; }
+        public object Contenido { get; set; }
+    }
 }

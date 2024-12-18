@@ -13,9 +13,10 @@
 }
 
 <section class="p-3">
+
     @if (ViewBag.Mensaje != null)
     {
-        <div class="alert alert-secondary text-center">@ViewBag.Mensaje</div>
+        <div class="alert alert-success text-center">@ViewBag.Mensaje</div>
     }
 
     @if (ViewBag.ErrorMessage != null)
@@ -27,41 +28,41 @@
     }
 
     <h2>Crear Nuevo Beneficiario</h2>
-    
 
-    <form asp-action="CreateBeneficiarios" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Cedula" class="form-control">
+    <form asp-action="CreateBeneficiario" asp-controller="Beneficiarios" method="post">
 
-            @if (ViewBag.ErrorMessage != null)
-            {
-                <p class="text-danger">*@ViewBag.ErrorMessage</p>
-            }
+         <div class="mb-3">
+            <label class="form-label">ID<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="id_beneficiario" class="form-control" placeholder="Ingrese el id del beneficiario" />
         </div>
         <div class="mb-3">
-            <label class="form-label">id_beneficiario<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Id" class="form-control">
+            <label class="form-label">Beneficiario<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="beneficiario" class="form-control" placeholder="Ingrese el nombre del beneficiario" />
         </div>
-        
+
         <div class="mb-3">
-            <label class="form-label">cedula<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Cedula" class="form-control">
+            <label class="form-label">Cédula<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="cedula" class="form-control" placeholder="Ingrese la cédula" />
         </div>
-        <div class="mb-3">
-            <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
-            <input type="correo" asp-for="Correo" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Telefono" class="form-control">
-        </div>
+
         <div class="mb-3">
             <label class="form-label">Dirección<span class="campos-requeridos">*</span></label>
-            <input type="text" asp-for="Direccion" class="form-control">
+            <textarea asp-for="direccion" class="form-control" placeholder="Ingrese la dirección"></textarea>
         </div>
-        
-       
+
+        <div class="mb-3">
+            <label class="form-label">Teléfono<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="telefono" class="form-control" placeholder="Ingrese el número de teléfono" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Activo<span class="campos-requeridos">*</span></label>
+            <select asp-for="activo" class="form-control">
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+            </select>
+        </div>
+
         <div class="pt-3">
             <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Beneficiario">
             <a href="@Url.Action("Index", "Beneficiarios")" class="btn btn-danger text-light btn-md">Cancelar</a>
@@ -70,10 +71,11 @@
 </section>
 
 <script>
-
+    // Ocultar mensaje de error después de 5 segundos
     function sleep(time) {
-        return new Promise((resolve) => setTimeout(resolve, time))
+        return new Promise((resolve) => setTimeout(resolve, time));
     }
+
     (() => {
         let alert = document.getElementById('error-message');
         if (alert != null) {
@@ -81,5 +83,5 @@
                 alert.style.display = 'none';
             });
         }
-    })()
+    })();
 </script>

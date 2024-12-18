@@ -55,6 +55,7 @@ namespace fubi_client.Controllers
                 {
                     var datosUsuario = JsonSerializer.Deserialize<User>((JsonElement)result.Contenido!);
 
+                    HttpContext.Session.SetString("id_usuario", datosUsuario!.id_usuario);
                     HttpContext.Session.SetString("Cedula", datosUsuario!.cedula.ToString());
                     HttpContext.Session.SetString("NombreUsuario", datosUsuario!.nombre);
                     HttpContext.Session.SetString("ApellidoUsuario", datosUsuario!.primer_apellido);

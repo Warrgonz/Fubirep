@@ -104,7 +104,7 @@ namespace fubi_client.Controllers
                 {
                     // URL de la API
                     var url = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/CrearPrestamo";
-
+                    model.id_encargado = int.Parse(HttpContext.Session.GetString("id_usuario"));
                     // Serializar y enviar el modelo
                     var prestamoContent = JsonContent.Create(model);
                     var response = await client.PostAsync(url, prestamoContent);
@@ -217,7 +217,7 @@ namespace fubi_client.Controllers
                     {
                         id_prestamo = model.LoanID,
                         id_beneficiario = Convert.ToInt32(model.BeneficiaryName),
-                        id_encargado = Convert.ToInt32(model.ManagerName),
+                        id_encargado = Convert.ToInt32(HttpContext.Session.GetString("id_usuario")),
                         id_inventario = Convert.ToInt32(model.ItemName),
                         cantidad = model.LoanQuantity,
                         fecha_limite_devolución = model.LoanDueDate,

@@ -1,87 +1,101 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using static System.Net.WebRequestMethods;
 using fubi_client.Models;
 using System.Text.Json;
-using System.Reflection;
-using System.Net.Http.Headers;
-using fubi_client.Models;
+using System.Net.Http.Json;
 
 namespace fubi_client.Controllers
 {
     public class BeneficiariosController : Controller
     {
-        private readonly IHttpClientFactory _http;
-        private readonly IConfiguration _conf;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public BeneficiariosController(IHttpClientFactory http, IConfiguration conf)
+        public BeneficiariosController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _http = http;
-            _conf = conf;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
+        // GET: Beneficiarios/Index
         public IActionResult Index()
         {
-            using (var client = _http.CreateClient())
+            using (var client = _httpClientFactory.CreateClient())
             {
-                // URL de la API para obtener la lista de beneficiarios
-                string url = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
-
+                // Construye la URL de la API para obtener beneficiarios
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
                 var response = client.GetAsync(url).Result;
-                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
 
-                if (result != null && result.Codigo == 0 && result.Contenido != null)
+                if (response.IsSuccessStatusCode)
                 {
-                    var datosContenido = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
-                    return View(new List<Beneficiarios>(datosContenido));
+                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                    if (result != null && result.Codigo == 0 && result.Contenido != null)
+                    {
+                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
+                        return View(beneficiarios);
+                    }
                 }
 
+                ViewBag.ErrorMessage = "Hubo un problema al cargar los beneficiarios.";
                 return View(new List<Beneficiarios>());
             }
         }
 
+        // GET: Beneficiarios/Create
         [HttpGet]
-        public IActionResult CreateBeneficiario()
+        public IActionResult CreateBeneficiarios()
         {
             return View();
         }
 
+        // POST: Beneficiarios/Create
         [HttpPost]
-        public async Task<IActionResult> CreateBeneficiario(Beneficiarios model)
+        public async Task<IActionResult> CreateBeneficiarios(Beneficiarios model)
         {
-            using (var client = _http.CreateClient())
+            if (!ModelState.IsValid)
             {
-                var url = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/CreateBeneficiario";
-                var beneficiarioContent = JsonContent.Create(model);
+                return View(model);
+            }
 
-                var response = await client.PostAsync(url, beneficiarioContent);
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/CreateBeneficiarios";
+                var response = await client.PostAsJsonAsync(url, model);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index", "Beneficiarios");
+                    return RedirectToAction("Index");
                 }
-                else
-                {
-                    var result = await response.Content.ReadFromJsonAsync<Respuesta>();
-                    ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error interno";
-                    return View(model);
-                }
+
+                var result = await response.Content.ReadFromJsonAsync<Respuesta>();
+                ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error al crear el beneficiario.";
+                return View(model);
             }
         }
 
+        // GET: Beneficiarios/Edit/{id}
         [HttpGet]
-        public IActionResult EditBeneficiario(int id)
+        public IActionResult EditBeneficiarios(int id)
         {
-            using (var client = _http.CreateClient())
+            using (var client = _httpClientFactory.CreateClient())
             {
-                var url = _conf.GetSection("Variables:UrlApi").Value + $"Beneficiarios/ObtenerBeneficiarios";
-
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
                 var response = client.GetAsync(url).Result;
-                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
 
-                if (result != null && result.Codigo == 0)
+                if (response.IsSuccessStatusCode)
                 {
-                    var beneficiario = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido)?.FirstOrDefault(b => b.Id == id);
-                    return View(beneficiario);
+                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                    if (result != null && result.Codigo == 0 && result.Contenido != null)
+                    {
+                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
+                        var beneficiario = beneficiarios?.FirstOrDefault(b => b.id_beneficiario == id);
+
+                        if (beneficiarios != null)
+                        {
+                            return View(beneficiarios);
+                        }
+                    }
                 }
 
                 ViewBag.ErrorMessage = "No se encontró el beneficiario.";
@@ -89,34 +103,78 @@ namespace fubi_client.Controllers
             }
         }
 
+        // POST: Beneficiarios/Edit
         [HttpPost]
-        public async Task<IActionResult> EditBeneficiario(Beneficiarios model)
+        public async Task<IActionResult> EditBeneficiarios(Beneficiarios model)
         {
-            using (var client = _http.CreateClient())
+            if (!ModelState.IsValid)
             {
-                var url = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ActualizarBeneficiario";
-                var beneficiarioContent = JsonContent.Create(model);
+                return View(model);
+            }
 
-                var response = await client.PutAsync(url, beneficiarioContent);
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ActualizarBeneficiario";
+                var response = await client.PutAsJsonAsync(url, model);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index", "Beneficiarios");
+                    return RedirectToAction("Index");
                 }
-                else
-                {
-                    ViewBag.ErrorMessage = "Hubo un error al actualizar el beneficiario.";
-                    return View(model);
-                }
+
+                ViewBag.ErrorMessage = "Hubo un error al actualizar el beneficiario.";
+                return View(model);
             }
         }
 
+        // GET: Beneficiarios/Disable/{id}
         [HttpGet]
-        public IActionResult DesabilitarBeneficiario() {
-            return View();
-        
+        public IActionResult DeshabilitarBeneficiario(int id)
+        {
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
+                var response = client.GetAsync(url).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                    if (result != null && result.Codigo == 0 && result.Contenido != null)
+                    {
+                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
+                        var beneficiario = beneficiarios?.FirstOrDefault(b => b.id_beneficiario == id);
+
+                        if (beneficiario != null)
+                        {
+                            return View(beneficiario);
+                        }
+                    }
+                }
+
+                ViewBag.ErrorMessage = "No se encontró el beneficiario.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: Beneficiarios/Disable
+        [HttpPost]
+        public async Task<IActionResult> DeshabilitarBeneficiario(Beneficiarios model)
+        {
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/DeshabilitarBeneficiario";
+                var response = await client.PutAsJsonAsync(url, model);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+
+                ViewBag.ErrorMessage = "Hubo un error al deshabilitar el beneficiario.";
+                return View(model);
+            }
         }
     }
 }
-
 
