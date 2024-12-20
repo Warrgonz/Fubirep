@@ -144,6 +144,7 @@ namespace fubi_client.Controllers
         [HttpGet]
         public IActionResult UpdateUser(string cedula)
         {
+            var ced = HttpContext.Session.GetString("Cedula");
             ConsultarRoles();
             return View(ObtenerUsuario(cedula));
         }
@@ -191,6 +192,66 @@ namespace fubi_client.Controllers
                 {
                     ViewBag.DropDownRoles = JsonSerializer.Deserialize<List<Role>>((JsonElement)result.Contenido!);
                 }
+            }
+        }
+
+        [HttpGet]
+        public IActionResult MiPerfil()
+        {
+            // Obtener la cédula del usuario logueado desde la sesión
+            var cedula = HttpContext.Session.GetString("CedulaUsuario");
+
+            if (string.IsNullOrEmpty(cedula))
+            {
+                return RedirectToAction("Login", "Auth"); // Redirigir si no está logueado
+            }
+
+            // Obtener los datos del usuario desde la API
+            var usuario = ObtenerUsuario(cedula);
+
+            if (usuario == null)
+            {
+                ViewBag.ErrorMessage = "No se pudieron cargar los datos del perfil.";
+                return View();
+            }
+
+            return View(usuario); // Enviar el modelo a la vista
+        }
+
+        [HttpPost]
+        public IActionResult MiPerfil(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model); // Retornar errores de validación
+            }
+
+            // Obtener la cédula del usuario logueado desde la sesión
+            var cedula = HttpContext.Session.GetString("CedulaUsuario");
+
+            if (string.IsNullOrEmpty(cedula))
+            {
+                return RedirectToAction("Login", "Auth"); // Redirigir si no está logueado
+            }
+
+            model.cedula = cedula; // Asegurarse de no cambiar la cédula del usuario
+
+            using (var client = _http.CreateClient())
+            {
+                var url = _conf.GetSection("Variables:UrlApi").Value + "User/UpdateUser";
+                var datos = JsonContent.Create(model);
+
+                var response = client.PutAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    ViewBag.SuccessMessage = "Perfil actualizado con éxito.";
+                    return RedirectToAction("MiPerfil");
+                }
+
+                ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error al actualizar el perfil.";
+                return View(model);
             }
         }
 
