@@ -1,0 +1,130 @@
+﻿@model fubi_client.Models.User
+
+@{
+    Layout = "~/Views/Shared/Public_Layout.cshtml";
+    var successMessage = TempData["SuccessMessage"];
+    var errorMessage = TempData["ErrorMessage"];
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/recuperar.css" />
+}
+
+@section Scripts {
+    <script src="~/js/Login.js"></script>
+}
+
+<style>
+    .pcoded-main-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw !important;
+        height: 100vh;
+        font-family: 'Segoe UI Variable Text';
+    }
+
+    .card {
+        width: 600px;
+        background-color: #131114;
+        border-radius: 20px;
+    }
+
+    .card-title{
+        color: #f5bc2a;
+    }
+
+    .card-subtitle{
+        color: white;
+    }
+
+    .btn-fubi{
+        width: 100%;
+        margin-top: 20px;
+        height: 40px;
+        background-color: #23b196;
+        color: azure;
+        border: none;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .btn-fubi:hover{
+       background-color: #f5b82a;
+    }
+
+    .regresar{
+        margin-top: 25px;
+        cursor: pointer;
+        color: #f5b82a;
+    }
+
+   .regresar:hover {
+      color: #23b196;
+      text-decoration: none;
+    }
+</style>
+
+<div class="card">
+  <div class="card-body">
+        @if (Model != null)
+        {
+            <form asp-action="RestablecerContrasena" asp-controller="Home" method="post">
+            <div class="d-flex justify-content-center mb-2">
+                <img src="https://root-projects.s3.amazonaws.com/FUBIREDIP.png" class="fubi-logo" alt="Alternate Text" />
+            </div>
+            <div class="mb-3">
+                <h3 class="card-title mb-4">Recuperar Contraseña</h3>
+                <h6 class="card-subtitle mb-2">Por favor complete el siguiente formulario para restablecer su contraseña asociada a su cuenta de Fubiredip.</h6>
+
+                    @if (successMessage != null)
+                    {
+                        <div class="alert alert-success" id="error-message" role="alert">
+                            @successMessage
+                        </div>
+                    }
+
+                    @if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger" id="error-message" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+            </div>
+            <div>
+                <input type="hidden" name="token" asp-for="SecureToken" value="@ViewData["Token"]" />
+                <label for="correoInput">Tu correo electrónico</label>
+                 <input type="email" id="emailInput" asp-for="correo" class="form-control" value="@Model.correo" readonly />
+            </div>
+            <div class="mt-3">
+                <label for="passwordInput">Nueva contraseña</label>
+                <div class="el-hechicero d-flex align-items-center">
+                    <input type="password" id="passwordInput" class="form-control" asp-for="contrasena" placeholder="Ingrese su nueva contraseña" />
+                    <a href="javascript:void(0)" onclick="elHechicero()">
+                        <ion-icon id="eyeIcon" name="eye-outline"></ion-icon>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-3">
+                <label for="passwordInputConfirm">Confirmar contraseña</label>
+                <div class="el-hechicero d-flex align-items-center">
+                    <input type="password" id="passwordInputConfirm" class="form-control" asp-for="contrasenaConfirmar" placeholder="Confirme su nueva contraseña" />
+                    <a href="javascript:void(0)" onclick="elHechicero()">
+                        <ion-icon id="eyeIcon" name="eye-outline"></ion-icon>
+                    </a>
+                </div>
+            </div>
+            <button type="submit" class="btn-fubi">Guardar cambios</button>
+            <div>
+                <a href="@Url.Action("Index", "Home")">
+                    <p class="text-center regresar">Regresar al menú principal</p>
+                </a>
+            </div>
+        </form>
+        }
+        else
+        {
+            <p>No se pudo cargar la información del usuario.</p>
+        }
+    </div>
+</div>

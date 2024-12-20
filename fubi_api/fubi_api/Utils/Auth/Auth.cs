@@ -1,6 +1,5 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using BCrypt.Net;
 
 namespace fubi_api.Utils.Auth
 {
@@ -38,11 +37,6 @@ namespace fubi_api.Utils.Auth
             }
 
             return Convert.ToBase64String(array);
-        }
-
-        public bool ValidoContraHash(string password, string hashedPassword)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
     }
 }

@@ -1,9 +1,15 @@
-﻿@{
+﻿@model fubi_client.Models.User
+
+@{
     Layout = "~/Views/Shared/Public_Layout.cshtml";
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/recuperar.css" />
+}
+
+@section Scripts {
+    <script src="~/js/Login.js"></script>
 }
 
 <style>
@@ -58,16 +64,23 @@
 
 <div class="card">
   <div class="card-body">
-  <form asp-action="RecuperarAcceso" asp-controller="Home">
+  <form asp-action="RecuperarAcceso" asp-controller="Home" method="post">
     <div class="d-flex justify-content-center mb-2">
       <img src="https://root-projects.s3.amazonaws.com/FUBIREDIP.png" class="fubi-logo" alt="Alternate Text" />
     </div>
         <div class="mb-3">
             <h3 class="card-title mb-4">Recuperar Contraseña</h3>
         <h6 class="card-subtitle mb-2">Escribe la dirección de correo electrónico asociado a su cuenta de Fubiredip.</h6>
-    </div>
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning" id="error-message">
+                        @TempData["WarningMessage"]
+                    </div>
+                }
+
+            </div>
     <div>
-        <input type="text" class="form-control" placeholder="micorreo@fubiredip.com" />
+        <input type="text" asp-for="correo" class="form-control" placeholder="micorreo@fubiredip.com" />
         <button type="submit" class="btn-fubi">Recuperar Contraseña</button>
     </div>
     <div>

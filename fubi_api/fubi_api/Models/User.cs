@@ -10,6 +10,7 @@ namespace fubi_api.Models
         public string? segundo_apellido { get; set; }
         public string? correo { get; set; }
         public string? contrasena { get; set; }
+        public string? contrasenaConfirmar { get; set; }
         public string? telefono { get; set; }
         public string? ruta_imagen { get; set; }
         public DateTime? fecha_nacimiento { get; set; }
@@ -19,6 +20,8 @@ namespace fubi_api.Models
         // Utils
         public int id_rol { get; set; }
         public string Token { get; set; } = string.Empty;
+        public string SecureToken { get; set; } = string.Empty;
+        public DateTime? token_generado { get; set; }
 
 
     }
