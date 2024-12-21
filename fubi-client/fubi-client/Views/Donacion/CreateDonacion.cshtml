@@ -35,18 +35,6 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Tipo de Donación <span class="campos-requeridos">*</span></label>
-            <select asp-for="IdTipoDonacion" class="form-control">
-                <option value="">Seleccione Tipo de Donación</option>
-                @foreach (var item in ViewBag.TiposDonacion)
-                {
-                    <option value="@item.id_tipo_donacion">@item.tipo_donacion</option>
-                }
-            </select>
-            <span asp-validation-for="IdTipoDonacion" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label">Beneficiario <span class="campos-requeridos">*</span></label>
             <select asp-for="IdBeneficiario" class="form-control">
                 <option value="">Seleccione Beneficiario</option>
@@ -59,6 +47,18 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Tipo de Donación <span class="campos-requeridos">*</span></label>
+            <select id="tipo-donacion" asp-for="IdTipoDonacion" class="form-control">
+                <option value="">Seleccione Tipo de Donación</option>
+                @foreach (var item in ViewBag.TiposDonacion)
+                {
+                    <option value="@item.id_tipo_donacion">@item.tipo_donacion</option>
+                }
+            </select>
+            <span asp-validation-for="IdTipoDonacion" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3" id="campo-inventario" style="display: none;">
             <label class="form-label">Inventario <span class="campos-requeridos">*</span></label>
             <select asp-for="IdInventario" class="form-control">
                 <option value="">Seleccione Inventario</option>
@@ -70,17 +70,19 @@
             <span asp-validation-for="IdInventario" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Monto <span class="campos-requeridos">*</span></label>
+        <div id="campo-monto" class="mb-3" style="display: none;">
+            <label class="form-label">Monto (En colones) <span class="campos-requeridos">*</span></label>
             <input type="text" asp-for="Monto" class="form-control">
             <span asp-validation-for="Monto" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
+        <div id="campo-cantidad" class="mb-3" style="display: none;">
             <label class="form-label">Cantidad <span class="campos-requeridos">*</span></label>
             <input type="text" asp-for="Cantidad" class="form-control">
             <span asp-validation-for="Cantidad" class="text-danger"></span>
         </div>
+
+        
 
         <div class="mb-3">
             <label class="form-label">Fecha <span class="campos-requeridos">*</span></label>
@@ -95,10 +97,40 @@
             <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
         }
     </form>
-
     @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const tipoDonacionSelect = document.getElementById("tipo-donacion");
+                const campoMonto = document.getElementById("campo-monto");
+                const campoCantidad = document.getElementById("campo-cantidad");
+                const campoInventario = document.getElementById("campo-inventario");
+
+                function actualizarVisibilidadCampos() {
+                    const selectedValue = tipoDonacionSelect.value;
+
+                    // Lógica para mostrar u ocultar campos
+                    if (selectedValue === "4") { // Tipo de donación monetaria
+                        campoMonto.style.display = "block";
+                        campoCantidad.style.display = "none";
+                        campoInventario.style.display = "none";
+                    } else if (selectedValue === "5") { // Tipo de donación en especie (inventario)
+                        campoMonto.style.display = "none";
+                        campoCantidad.style.display = "block";
+                        campoInventario.style.display = "block";
+                    } else {
+                        campoMonto.style.display = "none";
+                        campoCantidad.style.display = "none";
+                        campoInventario.style.display = "none";
+                    }
+                }
+
+                // Asignar evento de cambio al tipo de donación
+                tipoDonacionSelect.addEventListener("change", actualizarVisibilidadCampos);
+
+                // Llamar a la función al cargar la página para el estado inicial
+                actualizarVisibilidadCampos();
+            });
+        </script>
     }
+
 </section>
