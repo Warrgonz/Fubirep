@@ -4,6 +4,7 @@ using fubi_client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -54,6 +55,9 @@ namespace fubi_client.Controllers
                 // Obtenemos los beneficiarios
                 string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
                 var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                 var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
                 if (resultBeneficiarios != null && resultBeneficiarios.Codigo == 0)

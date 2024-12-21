@@ -1,0 +1,66 @@
+﻿@using fubi_client.Models
+@model fubi_client.Models.Beneficiarios
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/Beneficiarios.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user.css" />
+}
+
+<section class="p-3">
+
+    @if (TempData["ErrorMensaje"] != null)
+    {
+        <div class="alert alert-danger" id="error-message">
+            @TempData["ErrorMensaje"]
+        </div>
+    }
+    <h2>Crear Nuevo Beneficiario</h2>
+
+    <form asp-action="CrearBeneficiario" asp-controller="Beneficiarios" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Identificación<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Cedula" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Beneficiario<span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Beneficiario" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Correo Electrónico<span class="campos-requeridos">*</span></label>
+            <input type="correo" asp-for="Correo" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" asp-for="Telefono" class="form-control">
+        </div>
+        <div class="mb-3 d-flex flex-column">
+            <label class="form-label">Dirección</label>
+            <textarea asp-for="Direccion"></textarea>   
+        </div>
+        <div class="pt-3">
+            <input type="submit" class="btn btn-success btn-md mr-2" value="Crear Beneficiario">
+            <a href="@Url.Action("Index", "User")" class="btn btn-danger text-light btn-md">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+            <script>
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time))
+    }
+    (() => {
+        let alert = document.getElementById('error-message');
+        if (alert != null) {
+            sleep(5000).then(() => {
+                alert.style.display = 'none';
+            });
+        }
+    })()
+            </script>

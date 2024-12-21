@@ -18,12 +18,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using fubi_api.Utils.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 
 //using Firebase.Auth;
 
 namespace fubi_api.Controllers
 {
+    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -38,7 +40,6 @@ namespace fubi_api.Controllers
             _bucket = bucket;
             _auth = auth;
         }
-
 
         [HttpGet]
         [Route("ObtenerUsuarios")]
@@ -64,7 +65,6 @@ namespace fubi_api.Controllers
             }
         }
 
-        // Método para crear el usuario y subir la imagen
         [HttpPost]
         [Route("CreateUser")]
         public async Task<IActionResult> CrearCuenta([FromBody] User model, [FromServices] IMessage emailService)
@@ -264,33 +264,23 @@ namespace fubi_api.Controllers
             return Ok(respuesta);
         }
 
-
         [HttpPost]
-        [Route("DesactivarUsuario/{cedula}")]
-        public IActionResult DesactivarUsuario(string cedula)
+        [Route("ActualizarEstado")]
+        public IActionResult ActualizarEstado([FromBody] int cedula)
         {
-            Console.WriteLine($"Intentando desactivar usuario con cédula: {cedula}");
             var respuesta = new Respuesta();
 
-            try
-            {
                 using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
-                    Console.WriteLine("Conexión a base de datos establecida.");
-
                     var parameters = new { Cedula = cedula };
 
-                    Console.WriteLine("Ejecutando procedimiento almacenado...");
-
-                    var rowsAffected = context.QuerySingleOrDefault<int>(
-                        "DesactivarUsuario",
+                    var result = context.QuerySingleOrDefault<int>(
+                        "ActualizarEstado",
                         parameters,
                         commandType: CommandType.StoredProcedure
                     );
 
-                    Console.WriteLine($"Filas afectadas: {rowsAffected}");
-
-                    if (rowsAffected > 0)
+                    if (result == 0)
                     {
                         respuesta.Codigo = 0;
                         respuesta.Mensaje = "Usuario desactivado exitosamente.";
@@ -298,28 +288,36 @@ namespace fubi_api.Controllers
                     else
                     {
                         respuesta.Codigo = -1;
-                        respuesta.Mensaje = "No se encontró el usuario o ya estaba desactivado.";
+                        respuesta.Mensaje = "No se encontró el usuario";
                     }
                 }
-            }
-            catch (SqlException sqlEx)
-            {
-                Console.WriteLine($"Error de SQL: {sqlEx.Message}");
-                respuesta.Codigo = -2;
-                respuesta.Mensaje = "Error al comunicarse con la base de datos.";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error inesperado: {ex.Message}");
-                respuesta.Codigo = -3;
-                respuesta.Mensaje = $"Error inesperado: {ex.Message}";
-            }
 
-            // Devuelve la respuesta como JSON usando Ok()
             return Ok(respuesta);
         }
 
-        // yuca
+        [HttpGet]
+        [Route("EstadoQuery")]
+        public IActionResult ConsultarEstado()
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+                var result = context.Query<Role>("ConsultarRoles", new { });
+
+                if (result.Any())
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No hay roles registrados en este momento";
+                }
+
+                return Ok(respuesta);
+            }
+        }
 
         [HttpGet]
         [Route("RoleQuery")]
@@ -345,35 +343,35 @@ namespace fubi_api.Controllers
             }
         }
 
+
         [HttpGet]
         [Route("QueryUser")]
         public IActionResult ConsultarUsuario(string cedula)
         {
-            if (string.IsNullOrWhiteSpace(cedula))
-            {
-                return BadRequest("El parámetro 'cedula' es obligatorio y no puede estar vacío.");
-            }
-
-            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
-            {
-                var respuesta = new Respuesta();
-                var result = context.QueryFirstOrDefault<User>("ConsultarUsuario", new { cedula });
-
-                if (result != null)
+                if (string.IsNullOrWhiteSpace(cedula))
                 {
-                    respuesta.Codigo = 0;
-                    respuesta.Contenido = result;
-                }
-                else
-                {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "El usuario con la cédula proporcionada no existe.";
+                    return BadRequest("El parámetro 'cedula' es obligatorio y no puede estar vacío.");
                 }
 
-                return Ok(respuesta);
-            }
+                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+                {
+                    var respuesta = new Respuesta();
+                    var result = context.QueryFirstOrDefault<User>("ConsultarUsuario", new { cedula });
+
+                    if (result != null)
+                    {
+                        respuesta.Codigo = 0;
+                        respuesta.Contenido = result;
+                    }
+                    else
+                    {
+                        respuesta.Codigo = -1;
+                        respuesta.Mensaje = "El usuario con la cédula proporcionada no existe.";
+                    }
+
+                    return Ok(respuesta);
+                }
         }
-
 
         [HttpPut]
         [Route("UpdateUser")]

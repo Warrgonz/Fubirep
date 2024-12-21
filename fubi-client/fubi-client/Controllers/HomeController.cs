@@ -46,23 +46,25 @@ namespace fubi_client.Controllers
 
                 model.contrasena = _comunes.Hashear(model.contrasena);
                 JsonContent datos = JsonContent.Create(model);
-
+                
                 var response = client.PostAsync(url, datos).Result;
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
 
 
                 if (result != null && result.Codigo == 0)
                 {
-                    var datosUsuario = JsonSerializer.Deserialize<User>((JsonElement)result.Contenido!);
+                    var json = JsonSerializer.Serialize(result.Contenido);
+                    var datosUsuario = JsonSerializer.Deserialize<User>(json);
+                    datosUsuario.Token = JsonSerializer.Deserialize<JsonElement>(json).GetProperty("token").GetString();
 
-                    HttpContext.Session.SetString("id_usuario", datosUsuario!.id_usuario);
-                    HttpContext.Session.SetString("Cedula", datosUsuario!.cedula.ToString());
-                    HttpContext.Session.SetString("NombreUsuario", datosUsuario!.nombre);
-                    HttpContext.Session.SetString("ApellidoUsuario", datosUsuario!.primer_apellido);
-                    HttpContext.Session.SetString("RutaImagen", datosUsuario!.ruta_imagen);
-                    HttpContext.Session.SetString("TokenUsuario", datosUsuario!.Token);
-                    HttpContext.Session.SetInt32("RolUsuario", datosUsuario!.id_rol);
-                    HttpContext.Session.SetString("RolNombre", datosUsuario!.rol);
+                    HttpContext.Session.SetString("id_usuario", datosUsuario.id_usuario);
+                    HttpContext.Session.SetString("Cedula", datosUsuario.cedula.ToString());
+                    HttpContext.Session.SetString("NombreUsuario", datosUsuario.nombre);
+                    HttpContext.Session.SetString("ApellidoUsuario", datosUsuario.primer_apellido);
+                    HttpContext.Session.SetString("RutaImagen", datosUsuario.ruta_imagen);
+                    HttpContext.Session.SetString("TokenUsuario", datosUsuario.Token);
+                    HttpContext.Session.SetInt32("RolUsuario", datosUsuario.id_rol);
+                    HttpContext.Session.SetString("RolNombre", datosUsuario.rol);
                     return RedirectToAction("Index", "Dashboard");
                 }
                 else

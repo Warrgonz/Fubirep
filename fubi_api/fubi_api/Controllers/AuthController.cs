@@ -32,7 +32,6 @@ namespace fubi_api.Controllers
         {
             try
             {
-
                 using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
                 {
                     var parametros = new { correo = model.correo, contrasena = model.contrasena };
@@ -42,7 +41,6 @@ namespace fubi_api.Controllers
 
                     if (usuario == null)
                     {
-                        // El usuario no existe
                         respuesta.Codigo = -1;
                         respuesta.Mensaje = "El correo o contraseña son incorrectos, por favor inténtelo de nuevo.";
                         return Ok(respuesta);
@@ -50,19 +48,18 @@ namespace fubi_api.Controllers
 
                     if (usuario.activo == 0)
                     {
-                        // El usuario está inactivo
                         respuesta.Codigo = -1;
                         respuesta.Mensaje = "El usuario está inactivo. Por favor, contacte al administrador local.";
                         return Ok(respuesta);
                     }
 
-                    // El usuario es válido y activo
+                    // Asignar el usuario a la propiedad Contenido
                     usuario.Token = GenerarToken(usuario);
                     respuesta.Codigo = 0;
-                    respuesta.Contenido = usuario;
+                    respuesta.Contenido = usuario; // Devolver el objeto completo de usuario en Contenido
+                    respuesta.Mensaje = "Inicio de sesión exitoso.";
                     return Ok(respuesta);
                 }
-
             }
             catch (Exception ex)
             {
@@ -70,10 +67,11 @@ namespace fubi_api.Controllers
                 {
                     Codigo = -1,
                     Mensaje = "Error interno del servidor",
-                    Detalles = ex.Message 
+                    Detalles = ex.Message
                 });
-            } 
+            }
         }
+
 
         [HttpPost]
         [Route("RecuperarAcceso")]
