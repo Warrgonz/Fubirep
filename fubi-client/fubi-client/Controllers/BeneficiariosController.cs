@@ -2,179 +2,156 @@
 using fubi_client.Models;
 using System.Text.Json;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System.Net.Http.Headers;
 
 namespace fubi_client.Controllers
 {
     public class BeneficiariosController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _http;
+        private readonly IConfiguration _conf;
 
-        public BeneficiariosController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public BeneficiariosController(IHttpClientFactory http, IConfiguration conf)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
+            _http = http;
+            _conf = conf;
         }
 
-        // GET: Beneficiarios/Index
-        public IActionResult Index()
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            using (var client = _httpClientFactory.CreateClient())
+            var sesionData = HttpContext.Session.GetInt32("RolUsuario");
+
+            if (sesionData == null || sesionData != 2)
             {
-                // Construye la URL de la API para obtener beneficiarios
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
-                var response = client.GetAsync(url).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
-
-                    if (result != null && result.Codigo == 0 && result.Contenido != null)
-                    {
-                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
-                        return View(beneficiarios);
-                    }
-                }
-
-                ViewBag.ErrorMessage = "Hubo un problema al cargar los beneficiarios.";
-                return View(new List<Beneficiarios>());
+                // Redirige si el usuario no tiene el rol adecuado
+                context.Result = RedirectToAction("NotFound", "Error");
             }
+
+            base.OnActionExecuting(context);
         }
 
-        // GET: Beneficiarios/Create
+        // GET: Tabla de beneficiarios
         [HttpGet]
-        public IActionResult CreateBeneficiarios()
+        public async Task<IActionResult> Index()
         {
-            return View();
-        }
-
-        // POST: Beneficiarios/Create
-        [HttpPost]
-        public async Task<IActionResult> CreateBeneficiarios(Beneficiarios model)
-        {
-            if (!ModelState.IsValid)
+            using (var client = _http.CreateClient())
             {
-                return View(model);
-            }
+                var url = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
 
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/CreateBeneficiarios";
-                var response = await client.PostAsJsonAsync(url, model);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
+                var response = await client.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index");
-                }
+                    var apiResponse = await response.Content.ReadFromJsonAsync<Respuesta>();
 
-                var result = await response.Content.ReadFromJsonAsync<Respuesta>();
-                ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error al crear el beneficiario.";
-                return View(model);
-            }
-        }
-
-        // GET: Beneficiarios/Edit/{id}
-        [HttpGet]
-        public IActionResult EditBeneficiarios(int id)
-        {
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
-                var response = client.GetAsync(url).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
-
-                    if (result != null && result.Codigo == 0 && result.Contenido != null)
+                    if (apiResponse != null && apiResponse.Codigo == 0)
                     {
-                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
-                        var beneficiario = beneficiarios?.FirstOrDefault(b => b.id_beneficiario == id);
+                        // Deserializar la lista de beneficiarios
+                        var beneficiarios = apiResponse.Contenido as List<Beneficiarios>;
 
-                        if (beneficiarios != null)
+                        // Verifica que la lista no sea nula
+                        if (beneficiarios != null && beneficiarios.Any())
                         {
                             return View(beneficiarios);
                         }
-                    }
-                }
-
-                ViewBag.ErrorMessage = "No se encontró el beneficiario.";
-                return RedirectToAction("Index");
-            }
-        }
-
-        // POST: Beneficiarios/Edit
-        [HttpPost]
-        public async Task<IActionResult> EditBeneficiarios(Beneficiarios model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ActualizarBeneficiario";
-                var response = await client.PutAsJsonAsync(url, model);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("Index");
-                }
-
-                ViewBag.ErrorMessage = "Hubo un error al actualizar el beneficiario.";
-                return View(model);
-            }
-        }
-
-        // GET: Beneficiarios/Disable/{id}
-        [HttpGet]
-        public IActionResult DeshabilitarBeneficiario(int id)
-        {
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/ObtenerBeneficiarios";
-                var response = client.GetAsync(url).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
-
-                    if (result != null && result.Codigo == 0 && result.Contenido != null)
-                    {
-                        var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>((JsonElement)result.Contenido);
-                        var beneficiario = beneficiarios?.FirstOrDefault(b => b.id_beneficiario == id);
-
-                        if (beneficiario != null)
+                        else
                         {
-                            return View(beneficiario);
+                            TempData["ErrorMessage"] = "No hay beneficiarios registrados en este momento.";
+                            return View(new List<Beneficiarios>());
                         }
                     }
+                    else
+                    {
+                        TempData["ErrorMessage"] = apiResponse?.Mensaje ?? "Error al obtener los beneficiarios.";
+                        return View(new List<Beneficiarios>());
+                    }
                 }
-
-                ViewBag.ErrorMessage = "No se encontró el beneficiario.";
-                return RedirectToAction("Index");
-            }
-        }
-
-        // POST: Beneficiarios/Disable
-        [HttpPost]
-        public async Task<IActionResult> DeshabilitarBeneficiario(Beneficiarios model)
-        {
-            using (var client = _httpClientFactory.CreateClient())
-            {
-                string url = _configuration["Variables:UrlApi"] + "Beneficiarios/DeshabilitarBeneficiario";
-                var response = await client.PutAsJsonAsync(url, model);
-
-                if (response.IsSuccessStatusCode)
+                else
                 {
-                    return RedirectToAction("Index");
+                    TempData["ErrorMessage"] = "Hubo un error al obtener los beneficiarios.";
+                    return View(new List<Beneficiarios>());
                 }
-
-                ViewBag.ErrorMessage = "Hubo un error al deshabilitar el beneficiario.";
-                return View(model);
             }
         }
+
+
+        // GET: Formulario para agregar beneficiarios
+        [HttpGet]
+        public IActionResult CrearBeneficiario() { 
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearBeneficiario(Beneficiarios model)
+        {
+            try
+            {
+                using (var client = _http.CreateClient())
+                {
+                    var url = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/CrearBeneficiario";
+
+                    var userContent = JsonContent.Create(model);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
+                    var response = await client.PostAsync(url, userContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var respuesta = await response.Content.ReadFromJsonAsync<Respuesta>();
+
+                        if (respuesta != null)
+                        {
+                            switch (respuesta.Codigo)
+                            {
+                                case -1: 
+                                case -2: 
+                                case -3: 
+                                    TempData["ErrorMensaje"] = respuesta.Mensaje;
+                                    return RedirectToAction("CrearBeneficiario", "Beneficiarios");
+
+                                case 0: // Éxito
+                                    TempData["SuccessMensaje"] = respuesta.Mensaje;
+                                    return RedirectToAction("Index", "Beneficiarios");
+
+                                default: // Otros errores inesperados
+                                    TempData["ErrorMensaje"] = "Ocurrió un error inesperado. Código: " + respuesta.Codigo;
+                                    return RedirectToAction("CrearBeneficiario", "Beneficiarios");
+                            }
+                        }
+
+                        TempData["ErrorMensaje"] = "Error en la respuesta del servidor.";
+                        return RedirectToAction("Crear", "Beneficiario");
+                    }
+                    else
+                    {
+                        // Manejo de errores HTTP no exitosos (4xx, 5xx)
+                        var apiResponse = await response.Content.ReadFromJsonAsync<Respuesta>();
+                        TempData["ErrorMensaje"] = apiResponse?.Mensaje ?? "Ocurrió un error inesperado.";
+                        return RedirectToAction("Crear", "Beneficiario");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                TempData["ErrorMensaje"] = $"Error al conectar con el servidor: {ex.Message}";
+                return RedirectToAction("Error", "MostrarError");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
     }
 }
 

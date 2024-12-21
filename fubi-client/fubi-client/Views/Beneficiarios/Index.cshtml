@@ -1,67 +1,163 @@
 ﻿@model List<fubi_client.Models.Beneficiarios>
 
 @{
-    ViewData["Title"] = "Lista de Beneficiarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Lista de Beneficiarios</h2>
-
-<!-- Botón Crear Beneficiario -->
-<div class="mb-3 text-end">
-    <a href="@Url.Action("CreateBeneficiarios", "Beneficiarios")" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Crear Beneficiario
-    </a>
-</div>
-
-<!-- Tabla de Beneficiarios -->
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Cédula</th>
-                <th>Nombre</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Activo</th>
-                <th>Acciones</th> <!-- Columna para botones de acción -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var beneficiarios in Model)
-            {
-                <tr>
-                    <td>@beneficiarios.id_beneficiario</td>
-                    <td>@beneficiarios.cedula</td>
-                    <td>@beneficiarios.beneficiario</td>
-                    <td>@beneficiarios.direccion</td>
-                    <td>@beneficiarios.telefono</td>
-                    <td>@beneficiarios.activo ? "Sí" : "No")</td>
-                    <td>
-                        <!-- Botón Editar -->
-                        <a href="@Url.Action("EditBeneficiarios", "Beneficiarios", new { id = beneficiarios.id_beneficiario })"
-                           class="btn btn-primary btn-sm">
-                            <i class="bi bi-pencil-square"></i> Editar
-                        </a>
-
-                        <!-- Botón Deshabilitar -->
-                        <form asp-action="DeshabilitarBeneficiario" asp-controller="Beneficiario" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@beneficiarios.id_beneficiario" />
-                            <button type="submit" class="btn btn-warning btn-sm"
-                                    onclick="return confirm('¿Está seguro de que desea deshabilitar este beneficiario?');">
-                                <i class="bi bi-person-dash"></i> Deshabilitar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<!-- Mensaje en caso de que no haya beneficiarios -->
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info text-center">No hay beneficiarios registrados en este momento.</div>
+@section Scripts {
+    <script src="~/js/Beneficiarios.js"></script>
 }
+
+@functions {
+    public string GetStatus(int? activo)
+    {
+        return activo switch
+        {
+            0 => "Inactivo",
+            1 => "Activo",
+            _ => "Sin estado"
+        };
+    }
+}
+
+
+<div class="card">
+    @if (TempData["SuccessMensaje"] != null)
+    {
+        <div class="alert alert-success" id="error-message" role="alert">
+            @TempData["SuccessMensaje"]
+        </div>
+    }
+
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <h5 class="card-title">Lista de Beneficiarios</h5>
+            <a href="@Url.Action("CrearBeneficiario", "Beneficiarios")" class="btn-insertar">Crear Beneficiario</a>
+        </div>
+        <div class="table-responsive">
+            <table id="user-table" style="text-align: center; vertical-align: middle;" class="table text-nowrap align-middle mb-0">
+                <thead style="text-align: center;">
+                    <tr class="border-2 border-bottom border-primary border-0">
+                        <th>#</th>
+                        <th>Identificación</th>
+                        <th>Beneficiario</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @if (Model != null && Model.Any())
+                    {
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@Model[i].Cedula</td>
+                                <td>@Model[i].Beneficiario</td>
+                                <td>@Model[i].Correo</td>
+                                <td>@(Model[i].Telefono ?? "Sin registro")</td>
+                                <td>@(Model[i].Direccion ?? "Sin registro")</td>
+                                <td>@GetStatus(Model[i].Activo)</td>
+                                <td>
+                                    @if (Model[i].Activo == 1)
+                                    {
+                                        <!-- Botón para Inactivar -->
+                                        <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#usuarioModal"
+                                           data-cedula="@Model[i].Cedula" data-nombre="@Model[i].Beneficiario" data-action="inactivar">
+                                            <i class="fa fa-ban" style="font-size:1.6em; color: red"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <!-- Botón para Activar -->
+                                        <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#usuarioModal"
+                                           data-cedula="@Model[i].Cedula" data-nombre="@Model[i].Beneficiario" data-action="activar">
+                                            <i class="fa-solid fa-check" style="font-size:1.6em; color: green"></i>
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">No hay beneficiarios registrados en este momento.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="usuarioModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fs-5" id="staticBackdropLabel">Actualizar Estado del Beneficiario</h5>
+                <i class="fa-solid fa-x px-2 pt-2" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+            <form asp-action="ActualizarEstado" asp-controller="Beneficiarios" method="post">
+                <div class="modal-body">
+                    <h5 class="text-center" id="modal-message"></h5>
+                    <p class="text-center" id="modal-description"></p>
+                    <input type="hidden" name="Cedula" id="usuario-cedula-input" />
+                    <input type="hidden" name="Accion" id="usuario-accion-input" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" id="modal-action-button" class="btn"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Selecciona el modal
+        const modal = document.getElementById("usuarioModal");
+        const modalMessage = modal.querySelector("#modal-message");
+        const modalDescription = modal.querySelector("#modal-description");
+        const modalCedulaInput = modal.querySelector("#usuario-cedula-input");
+        const modalAccionInput = modal.querySelector("#usuario-accion-input");
+        const modalActionButton = modal.querySelector("#modal-action-button");
+
+        // Escucha el clic en todos los botones con el atributo data-action
+        document.querySelectorAll('[data-bs-target="#usuarioModal"]').forEach(button => {
+            button.addEventListener("click", () => {
+                // Obtén los valores de los atributos personalizados
+                const cedula = button.getAttribute("data-cedula");
+                const nombre = button.getAttribute("data-nombre");
+                const action = button.getAttribute("data-action");
+
+                // Ajusta el contenido del modal según la acción
+                if (action === "inactivar") {
+                    modalMessage.textContent = `¿Está de acuerdo en inactivar el usuario ${nombre}, cédula ${cedula}?`;
+                    modalDescription.textContent = "El usuario no podrá iniciar sesión hasta que vuelva estar activo.";
+                    modalActionButton.textContent = "Inactivar";
+                    modalActionButton.classList.add("btn-danger");
+                    modalActionButton.classList.remove("btn-success");
+                } else if (action === "activar") {
+                    modalMessage.textContent = `¿Está de acuerdo en activar el usuario ${nombre}, cédula ${cedula}?`;
+                    modalDescription.textContent = "El usuario podrá iniciar sesión una vez esté activo.";
+                    modalActionButton.textContent = "Activar";
+                    modalActionButton.classList.add("btn-success");
+                    modalActionButton.classList.remove("btn-danger");
+                }
+
+                // Configura los inputs ocultos para el formulario
+                modalCedulaInput.value = cedula;
+                modalAccionInput.value = action;
+            });
+        });
+    });
+</script>

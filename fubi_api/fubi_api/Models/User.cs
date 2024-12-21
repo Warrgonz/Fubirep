@@ -20,6 +20,8 @@ namespace fubi_api.Models
         // Utils
         public int id_rol { get; set; }
         public string Token { get; set; } = string.Empty;
+
+        // Para recuperar contraseña
         public string SecureToken { get; set; } = string.Empty;
         public DateTime? token_generado { get; set; }
 

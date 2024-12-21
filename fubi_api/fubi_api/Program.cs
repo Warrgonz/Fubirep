@@ -16,7 +16,6 @@ builder.Services.Configure<GmailSettings>(builder.Configuration.GetSection("Gmai
 
 builder.Services.AddScoped<IAuth, Auth>();
 
-
 // S3
 
 builder.Services.AddSingleton<IBucket, Bucket>();
@@ -70,7 +69,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler("/api/Error/RegistrarError");
+
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

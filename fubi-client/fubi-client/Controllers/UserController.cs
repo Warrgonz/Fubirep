@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Reflection;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System;
 
 namespace fubi_client.Controllers
 {
@@ -38,6 +39,10 @@ namespace fubi_client.Controllers
             {
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/ObtenerUsuarios";
 
+                var auth = HttpContext.Session.GetString("TokenUsuario");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth);
+
                 var response = client.GetAsync(url).Result;
 
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
@@ -67,6 +72,8 @@ namespace fubi_client.Controllers
             {
                 var url = _conf.GetSection("Variables:UrlApi").Value + "User/CreateUser";
                 var userContent = JsonContent.Create(model);
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 var response = await client.PostAsync(url, userContent);
 
@@ -124,12 +131,39 @@ namespace fubi_client.Controllers
         }
 
         [HttpPost]
-        public IActionResult DesactivarUsuario()
+        public IActionResult ActualizarEstadoUsuario(string cedula)
         {
-            return View();
-        }
+            try
+            {
+                using (var client = _http.CreateClient())
+                {
+                    var url = _conf.GetSection("Variables:UrlApi").Value + "User/ActualizarEstado";
 
-        // Actualizar usuarios
+                    JsonContent datos = JsonContent.Create(cedula);
+
+                    // El hechicero
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
+                    var response = client.PostAsync(url, datos).Result;
+                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+
+                    if (result != null && result.Codigo == 0)
+                    {
+
+                        return RedirectToAction("Index", "User");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = result.Mensaje;
+                        return RedirectToAction("MostrarError", "Error");
+                    }
+                } 
+            }
+            catch (Exception ex) {
+                return RedirectToAction("MostrarError", "Error");
+            }
+        }
 
         [HttpGet]
         public IActionResult UpdateUser(string cedula)
@@ -146,6 +180,7 @@ namespace fubi_client.Controllers
                 var url = _conf.GetSection("Variables:UrlApi").Value + "User/UpdateUser";
 
                 JsonContent datos = JsonContent.Create(model);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 var response = client.PutAsync(url, datos).Result;
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
@@ -205,7 +240,6 @@ namespace fubi_client.Controllers
             }
         }
 
-
         // Roles
 
         [HttpGet]
@@ -214,6 +248,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/RoleQuery";
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 var response = client.GetAsync(url).Result;
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
@@ -233,6 +269,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/QueryUser?cedula=" + cedula;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 if (string.IsNullOrEmpty(url))
                 {

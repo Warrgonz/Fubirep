@@ -1,5 +1,8 @@
 ﻿using Dapper;
+using fubi_api.Models;
+using fubi_api.Utils.Smtp;
 using fubi_client.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +11,7 @@ using System.Linq;
 
 namespace fubi_api.Controllers
 {
+    [Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class BeneficiariosController : ControllerBase
@@ -19,14 +23,18 @@ namespace fubi_api.Controllers
             _conf = conf;
         }
 
+
+
         [HttpGet]
-        [Route("ObtenerBeneficiarios")]
+        [Route("ObtenerPrestBeneficiarios")]
         public IActionResult ConsultarBeneficiarios()
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var respuesta = new Respuesta();
-                var result = context.Query<Beneficiarios>("ConsultarBeneficiarios", commandType: CommandType.StoredProcedure);
+
+                // Ejecuta el stored procedure ConsultarBeneficiarios
+                var result = context.Query<Beneficiarios>("ConsultarPrestBeneficiarios", commandType: CommandType.StoredProcedure).ToList();
 
                 if (result.Any())
                 {
@@ -44,141 +52,96 @@ namespace fubi_api.Controllers
         }
 
         [HttpPost]
-        [Route("CreateBeneficiarios")]
-        public IActionResult CreateBeneficiarios([FromBody] Beneficiarios beneficiarios)
+        [Route("CrearBeneficiario")]
+        public async Task<IActionResult> CrearBeneficiario([FromBody] Beneficiarios model)
         {
             var respuesta = new Respuesta();
 
-            try
-            {
-                if (!string.IsNullOrEmpty(beneficiarios.beneficiario) && !string.IsNullOrEmpty(beneficiarios.direccion) )
-                {
-                }
-                else
-                {
-                    respuesta.Codigo = -3;
-                    respuesta.Mensaje = "Los campos obligatorios no pueden estar vacíos.";
-                    return BadRequest(respuesta);
-                }
-
-                using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
-                {
-                    var parameters = new
-                    {
-                        IdBeneficiario = beneficiarios.id_beneficiario,
-                        Beneficiario= beneficiarios.beneficiario,
-                        Cedula = beneficiarios.cedula,
-                        Direccion = beneficiarios.direccion,
-                        Telefono = beneficiarios.telefono,
-                        Activo = beneficiarios.activo
-                    };
-
-                    var result = context.Execute("CreateBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
-
-                    if (result > 0)
-                    {
-                        respuesta.Codigo = 0;
-                        respuesta.Mensaje = "Beneficiario creado correctamente.";
-                    }
-                    else
-                    {
-                        respuesta.Codigo = -1;
-                        respuesta.Mensaje = "No se pudo registrar el beneficiario.";
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                if (ex.Number == 2627 || ex.Number == 2601) // Error de clave única
-                {
-                    respuesta.Codigo = -2;
-                    respuesta.Mensaje = "El beneficiario ya está registrado en el sistema.";
-                }
-                else
-                {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = $"Error al registrar el beneficiario: {ex.Message}";
-                }
-                return BadRequest(respuesta);
-            }
-            catch (Exception ex)
+            if (string.IsNullOrWhiteSpace(model.Beneficiario) ||
+    string.IsNullOrWhiteSpace(model.Cedula) ||
+    string.IsNullOrWhiteSpace(model.Correo))
             {
                 respuesta.Codigo = -1;
-                respuesta.Mensaje = $"Error inesperado: {ex.Message}";
-                return BadRequest(respuesta);
+               respuesta.Mensaje = "El campo requeridos no pueden estar vacío.";
+               return Ok(respuesta);
             }
 
-            return Ok(respuesta);
-        }
+            if (await CedulaExiste(model.Cedula))
+            {
+                respuesta.Codigo = -2;
+                respuesta.Mensaje = "El beneficiario con la cédula ingresada, ya existe.";
+                return Ok(respuesta);
+            }
 
-        [HttpPut]
-        [Route("EditBeneficiarios")]
-        public IActionResult EditBeneficiarios([FromBody] Beneficiarios beneficiarios)
-        {
-            var respuesta = new Respuesta();
+            if (await CorreoExiste(model.Correo))
+            {
+                respuesta.Codigo = -3;
+                respuesta.Mensaje = "El beneficiario con el correo ingresado, ya existe.";
+                return Ok(respuesta);
+            }
 
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var parameters = new
                 {
-                    IdBeneficiario = beneficiarios.id_beneficiario,
-                    Beneficiario = beneficiarios.beneficiario,
-                    Cedula = beneficiarios.cedula,
-                    Direccion = beneficiarios.direccion,
-                    Telefono = beneficiarios.telefono,
-                    Activo = beneficiarios.activo,
+                    Cedula = model.Cedula,
+                    Beneficiario = model.Beneficiario,
+                    Correo = model.Correo,
+                    Telefono = model.Telefono,
+                    Direccion = model.Direccion
                 };
 
-                var result = context.Execute("EditBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
+                var rowsAffected = await context.ExecuteAsync(
+                    "CrearBeneficiario",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
 
-                if (result > 0)
+                if (rowsAffected > 0)
                 {
-                    respuesta.Codigo = 0;
-                    respuesta.Mensaje = "Beneficiario se ha editado correctamente.";
+                    return Ok(new Respuesta { Codigo = 0, Mensaje = "Beneficiario creado exitosamente." });
                 }
                 else
                 {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "No se pudo editar el beneficiario.";
+                    return StatusCode(500, new Respuesta { Codigo = -4, Mensaje = "Error al crear beneficiario." });
                 }
-
-                return Ok(respuesta);
             }
         }
 
-        [HttpPut]
-        [Route("DeshabilitarBeneficiarios/{cedula}")]
-        public IActionResult DeshabilitarBeneficiarios(string cedula)
+        private async Task<bool> CedulaExiste(string cedula)
         {
-            var respuesta = new Respuesta();
-
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
             {
                 var parameters = new { Cedula = cedula };
-                var result = context.Execute("DeshabilitarBeneficiarios", parameters, commandType: CommandType.StoredProcedure);
+                var existe = await context.ExecuteScalarAsync<int>(
+                    "ConsultarCedulaBeneficiario",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
 
-                if (result > 0)
-                {
-                    respuesta.Codigo = 0;
-                    respuesta.Mensaje = "Beneficiario deshabilitado correctamente.";
-                }
-                else
-                {
-                    respuesta.Codigo = -1;
-                    respuesta.Mensaje = "No se pudo deshabilitar el beneficiario.";
-                }
-
-                return Ok(respuesta);
+                return existe > 0;
             }
         }
+
+        private async Task<bool> CorreoExiste(string correo)
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var parameters = new { Correo = correo };
+                var existe = await context.ExecuteScalarAsync<int>(
+                    "ConsultarCorreoBeneficiario",
+                    parameters,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                return existe > 0;
+            }
+        }
+
+
+
     }
 
-    
-
-    public class Respuesta
-    {
-        public int Codigo { get; set; }
-        public string Mensaje { get; set; }
-        public object Contenido { get; set; }
-    }
 }
+
+
