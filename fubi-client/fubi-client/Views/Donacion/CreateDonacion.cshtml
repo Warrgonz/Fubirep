@@ -1,0 +1,104 @@
+﻿@model fubi_client.Models.Donacion
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="p-3">
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" id="error-message" role="alert">
+            @ViewBag.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <h2>Crear Nueva Donación</h2>
+
+    <form asp-action="CreateDonacion" asp-controller="Donacion" method="post">
+        <div class="mb-3">
+            <label class="form-label">Donante <span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Donante" class="form-control">
+            <span asp-validation-for="Donante" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo de Movimiento <span class="campos-requeridos">*</span></label>
+            <select asp-for="IdTipoMovimiento" class="form-control">
+                <option value="">Seleccione Tipo de Movimiento</option>
+                @foreach (var item in ViewBag.TiposMovimiento)
+                {
+                    <option value="@item.IdTipoMovimiento">@item.Movimiento</option>
+                }
+            </select>
+            <span asp-validation-for="IdTipoMovimiento" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo de Donación <span class="campos-requeridos">*</span></label>
+            <select asp-for="IdTipoDonacion" class="form-control">
+                <option value="">Seleccione Tipo de Donación</option>
+                @foreach (var item in ViewBag.TiposDonacion)
+                {
+                    <option value="@item.id_tipo_donacion">@item.tipo_donacion</option>
+                }
+            </select>
+            <span asp-validation-for="IdTipoDonacion" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Beneficiario <span class="campos-requeridos">*</span></label>
+            <select asp-for="IdBeneficiario" class="form-control">
+                <option value="">Seleccione Beneficiario</option>
+                @foreach (var item in ViewBag.Beneficiarios)
+                {
+                    <option value="@item.id_beneficiario">@item.beneficiario</option>
+                }
+            </select>
+            <span asp-validation-for="IdBeneficiario" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Inventario <span class="campos-requeridos">*</span></label>
+            <select asp-for="IdInventario" class="form-control">
+                <option value="">Seleccione Inventario</option>
+                @foreach (var item in ViewBag.Inventarios)
+                {
+                    <option value="@item.id_inventario">@item.nombre</option>
+                }
+            </select>
+            <span asp-validation-for="IdInventario" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Monto <span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Monto" class="form-control">
+            <span asp-validation-for="Monto" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cantidad <span class="campos-requeridos">*</span></label>
+            <input type="text" asp-for="Cantidad" class="form-control">
+            <span asp-validation-for="Cantidad" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fecha <span class="campos-requeridos">*</span></label>
+            <input type="date" asp-for="Fecha" class="form-control">
+            <span asp-validation-for="Fecha" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear Donación</button>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
+        }
+    </form>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }
+</section>
