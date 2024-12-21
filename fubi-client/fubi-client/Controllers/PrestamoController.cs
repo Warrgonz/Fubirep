@@ -4,6 +4,7 @@ using fubi_client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
@@ -52,8 +53,11 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 // Obtenemos los beneficiarios
-                string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
+                string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
                 var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                 var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
                 if (resultBeneficiarios != null && resultBeneficiarios.Codigo == 0)
@@ -104,7 +108,7 @@ namespace fubi_client.Controllers
                 {
                     // URL de la API
                     var url = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/CrearPrestamo";
-
+                    model.id_encargado = int.Parse(HttpContext.Session.GetString("id_usuario"));
                     // Serializar y enviar el modelo
                     var prestamoContent = JsonContent.Create(model);
                     var response = await client.PostAsync(url, prestamoContent);
@@ -156,7 +160,7 @@ namespace fubi_client.Controllers
                     var prestamo = await responsePrestamo.Content.ReadFromJsonAsync<PrestamoDetalle>();
 
                     // Obtenemos los beneficiarios
-                    string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
+                    string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
                     var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
                     var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
@@ -217,7 +221,7 @@ namespace fubi_client.Controllers
                     {
                         id_prestamo = model.LoanID,
                         id_beneficiario = Convert.ToInt32(model.BeneficiaryName),
-                        id_encargado = Convert.ToInt32(model.ManagerName),
+                        id_encargado = Convert.ToInt32(HttpContext.Session.GetString("id_usuario")),
                         id_inventario = Convert.ToInt32(model.ItemName),
                         cantidad = model.LoanQuantity,
                         fecha_limite_devolución = model.LoanDueDate,
@@ -296,7 +300,7 @@ namespace fubi_client.Controllers
                 string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
 
                 // Beneficiarios
-                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerPrestBeneficiarios");
                 if (responseBeneficiarios.IsSuccessStatusCode)
                 {
                     var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();
@@ -351,7 +355,7 @@ namespace fubi_client.Controllers
                 }
 
                 // Beneficiarios
-                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerPrestBeneficiarios");
                 if (responseBeneficiarios.IsSuccessStatusCode)
                 {
                     var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();

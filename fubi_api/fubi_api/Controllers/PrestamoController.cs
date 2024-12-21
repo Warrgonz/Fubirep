@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using fubi_api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PrestamosController : ControllerBase

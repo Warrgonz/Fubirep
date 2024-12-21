@@ -38,9 +38,9 @@
             <div class="navbar-content scroll-div">
                 <div class="">
                     <div class="main-menu-header" style="background-color: #9aba99">
-                       <img class="img-radius"
+                        <img class="img-radius"
                              src="@Context.Session.GetString("RutaImagen")"
-                              alt="User-Profile-Image" />
+                             alt="User-Profile-Image" />
                         <div class="user-details" id="more-details">
                             <!--Aquí va el nombre del viejo-->
                             <span class="text-dark">@Context.Session.GetString("NombreUsuario") @Context.Session.GetString("ApellidoUsuario")</span>
@@ -52,8 +52,8 @@
                     </div>
                     <div class="collapse" id="nav-user-link">
                         <ul class="list-unstyled nav-icons">
-                            <li class="list-group-item">
-                                <a href="user-profile.html"><ion-icon name="settings-outline"></ion-icon>Mi perfil</a>
+                            <li class="list-group-item" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                <a><ion-icon name="settings-outline"></ion-icon>Mi perfil</a>
                             </li>
                             <li class="list-group-item">
                                 <a href="@Url.Action("CerrarSesion","Home")"><ion-icon name="log-out-outline"></ion-icon>Cerrar sesión</a>
@@ -71,12 +71,13 @@
                             <span class="pcoded-micon"><ion-icon name="home-outline"></ion-icon></span><span class="pcoded-mtext">Inicio</span>
                         </a>
                     </li>
-                    @if (Context.Session.GetInt32("RolUsuario") == 2){
-                    <li class="nav-item">
-                        <a href="@Url.Action("Index", "User")" class="nav-link">
-                            <span class="pcoded-micon"><ion-icon name="person-outline"></ion-icon></span><span class="pcoded-mtext">Usuarios</span>
-                        </a>
-                    </li>
+                    @if (Context.Session.GetInt32("RolUsuario") == 2)
+                    {
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "User")" class="nav-link">
+                                <span class="pcoded-micon"><ion-icon name="person-outline"></ion-icon></span><span class="pcoded-mtext">Usuarios</span>
+                            </a>
+                        </li>
                     }
                     <li class="nav-item">
                         <a href="@Url.Action("Index", "Donacion")" class="nav-link">
@@ -84,7 +85,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a  href="@Url.Action("Index", "Beneficiarios")" class="nav-link">
+                        <a href="@Url.Action("Index", "Beneficiarios")" class="nav-link">
                             <span class="pcoded-micon"><ion-icon name="people-outline"></ion-icon></span><span class="pcoded-mtext">Beneficiarios</span>
                         </a>
                     </li>
@@ -104,7 +105,6 @@
                             <span class="pcoded-micon"><ion-icon name="wallet-outline"></ion-icon></span><span class="pcoded-mtext">Ingresos</span>
                         </a>
                     </li>
-                   
                 </ul>
             </div>
         </div>
@@ -114,7 +114,7 @@
     <header class="navbar pcoded-header navbar-expand-lg" style="background-color: #1e1e1e">
         <div class="m-header">
             <a href="#!" class="b-brand">
-                <img src="~/images/fubi-logo.png" alt="" class="fubi-icon"/>
+                <img src="~/images/fubi-logo.png" alt="" class="fubi-icon" />
                 <h1 class="text-light fubi-title">FUBIREDIP</h1>
             </a>
         </div>
@@ -150,4 +150,27 @@
 
     @RenderSection("Scripts", required: false)
 </body>
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileModalLabel">Vista Previa del Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <!-- Contenido del perfil -->
+                <img class="img-radius mb-3"
+                     src="@Context.Session.GetString("RutaImagen")"
+                     alt="User-Profile-Image"
+                     style="width: 100px; height: 100px;" />
+                <h5>@Context.Session.GetString("NombreUsuario") @Context.Session.GetString("ApellidoUsuario")</h5>
+                <p><strong>Rol:</strong> @Context.Session.GetString("RolNombre")</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <!-- Botón que redirige a la página completa de perfil -->
+                <a href="@Url.Action("UpdateUser","User", new { cedula = Context.Session.GetString("Cedula")})" class="btn btn-primary">Ir al Perfil</a>
+            </div>
+        </div>
+    </div>
+</div>
 </html>

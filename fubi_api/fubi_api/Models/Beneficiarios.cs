@@ -1,18 +1,12 @@
-﻿namespace fubi_api.Models
+﻿namespace fubi_client.Models
 {
     public class Beneficiarios
     {
-
-        public int id_beneficiario { get; set; }
-        public int cedula { get; set; }
-        public string? beneficiario { get; set; }
-        public string? Nombre { get; set; }
-        public string? correo { get; set; }
-        public int telefono { get; set; }
-        public string? direccion { get; set; }
-        public bool Activo { get; set; }
-
-        public string?  ruta_imagen { get; set; }
-
+        public string? Cedula { get; set; }
+        public string? Beneficiario { get; set; }
+        public string? Correo { get; set; }
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
+        public int Activo { get; set; }
     }
 }

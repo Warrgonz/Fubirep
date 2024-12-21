@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Reflection;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System;
 
 namespace fubi_client.Controllers
 {
@@ -36,26 +37,23 @@ namespace fubi_client.Controllers
         {
             using (var client = _http.CreateClient())
             {
-                // La URL de la API donde se obtiene la lista de usuarios
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/ObtenerUsuarios";
 
-                // Realizamos la solicitud GET al endpoint de la API
+                var auth = HttpContext.Session.GetString("TokenUsuario");
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth);
+
                 var response = client.GetAsync(url).Result;
 
-                // Leemos la respuesta como un objeto de tipo 'Respuesta'
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
 
-                // Si la respuesta es exitosa y tiene datos
                 if (result != null && result.Codigo == 0 && result.Contenido != null)
                 {
-                    // Deserializamos el contenido en una lista de usuarios
                     var datosContenido = JsonSerializer.Deserialize<List<User>>((JsonElement)result.Contenido);
 
-                    // Devolvemos la vista con los usuarios obtenidos
                     return View(new List<User>(datosContenido));
                 }
 
-                // Si no hay usuarios o la respuesta fue incorrecta, devolvemos una lista vacía
                 return View(new List<User>());
             }
         }
@@ -63,6 +61,7 @@ namespace fubi_client.Controllers
         [HttpGet]
         public IActionResult CreateUser()
         {
+            ConsultarRoles();
             return View();
         }
 
@@ -74,6 +73,8 @@ namespace fubi_client.Controllers
                 var url = _conf.GetSection("Variables:UrlApi").Value + "User/CreateUser";
                 var userContent = JsonContent.Create(model);
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                 var response = await client.PostAsync(url, userContent);
 
                 if (response.IsSuccessStatusCode)
@@ -83,19 +84,15 @@ namespace fubi_client.Controllers
 
                     if (ruta_imagen != null && ruta_imagen.Length > 0)
                     {
-                        // Subir imagen proporcionada por el usuario
                         formContent.Add(new StreamContent(ruta_imagen.OpenReadStream()), "file", ruta_imagen.FileName);
                     }
                     else
                     {
-                        // Asignar imagen por defecto
                         var defaultImageUrl = _conf.GetSection("DefaultImage:imagen_defecto").Value;
 
-                        // Descargar la imagen por defecto
                         using var httpClient = new HttpClient();
                         var imageBytes = await httpClient.GetByteArrayAsync(defaultImageUrl);
 
-                        // Crear un flujo y asignarlo al contenido
                         var stream = new MemoryStream(imageBytes);
                         formContent.Add(new StreamContent(stream), "file", "default-image.jpg");
                     }
@@ -134,46 +131,115 @@ namespace fubi_client.Controllers
         }
 
         [HttpPost]
-        public IActionResult DesactivarUsuario()
+        public IActionResult ActualizarEstadoUsuario(string cedula)
         {
-            return View();
-        }
+            try
+            {
+                using (var client = _http.CreateClient())
+                {
+                    var url = _conf.GetSection("Variables:UrlApi").Value + "User/ActualizarEstado";
 
-        // Actualizar usuarios
+                    JsonContent datos = JsonContent.Create(cedula);
+
+                    // El hechicero
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
+                    var response = client.PostAsync(url, datos).Result;
+                    var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+
+                    if (result != null && result.Codigo == 0)
+                    {
+
+                        return RedirectToAction("Index", "User");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = result.Mensaje;
+                        return RedirectToAction("MostrarError", "Error");
+                    }
+                } 
+            }
+            catch (Exception ex) {
+                return RedirectToAction("MostrarError", "Error");
+            }
+        }
 
         [HttpGet]
         public IActionResult UpdateUser(string cedula)
         {
+            var ced = HttpContext.Session.GetString("Cedula");
             ConsultarRoles();
             return View(ObtenerUsuario(cedula));
         }
 
         [HttpPost]
-        public IActionResult UpdateUser(User model)
+        public async Task<IActionResult> UpdateUser(User model, IFormFile ruta_imagen)
         {
             using (var client = _http.CreateClient())
             {
                 var url = _conf.GetSection("Variables:UrlApi").Value + "User/UpdateUser";
 
                 JsonContent datos = JsonContent.Create(model);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 var response = client.PutAsync(url, datos).Result;
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
 
-                if (result != null && result.Codigo == 0)
+                if (response.IsSuccessStatusCode)
                 {
-                    ViewBag.Mensaje = result!.Mensaje;
-                    return RedirectToAction("Index", "User");
+                    var imageUrl = $"{_conf.GetSection("Variables:UrlApi").Value}User/UpdateUserImage/{model.cedula}";
+                    var formContent = new MultipartFormDataContent();
+
+                    if (ruta_imagen != null && ruta_imagen.Length > 0)
+                    {
+                        formContent.Add(new StreamContent(ruta_imagen.OpenReadStream()), "file", ruta_imagen.FileName);
+                    }
+                    else
+                    {
+                        var defaultImageUrl = _conf.GetSection("DefaultImage:imagen_defecto").Value;
+
+                        using var httpClient = new HttpClient();
+                        var imageBytes = await httpClient.GetByteArrayAsync(defaultImageUrl);
+
+                        var stream = new MemoryStream(imageBytes);
+                        formContent.Add(new StreamContent(stream), "file", "default-image.jpg");
+                    }
+
+                    var uploadResponse = await client.PostAsync(imageUrl, formContent);
+
+                    if (uploadResponse.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Index", "User");
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "No se pudo cargar la imagen.";
+                        return View(model);
+                    }
                 }
                 else
                 {
-                    ConsultarRoles();
-                    ViewBag.Mensaje = result!.Mensaje;
-                    return View();
+                    result = await response.Content.ReadFromJsonAsync<Respuesta>();
+
+                    if (result.Codigo == -2)
+                    {
+                        ViewBag.ErrorMessage = result.Mensaje;
+                    }
+                    else if (result.Codigo == -3)
+                    {
+                        ViewBag.ErrorMessage = result.Mensaje;
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "Hubo un error interno";
+                    }
+                    return View(model);
                 }
+
+
             }
         }
-
 
         // Roles
 
@@ -183,6 +249,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/RoleQuery";
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 var response = client.GetAsync(url).Result;
                 var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
@@ -194,6 +262,66 @@ namespace fubi_client.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult MiPerfil()
+        {
+            // Obtener la cédula del usuario logueado desde la sesión
+            var cedula = HttpContext.Session.GetString("CedulaUsuario");
+
+            if (string.IsNullOrEmpty(cedula))
+            {
+                return RedirectToAction("Login", "Auth"); // Redirigir si no está logueado
+            }
+
+            // Obtener los datos del usuario desde la API
+            var usuario = ObtenerUsuario(cedula);
+
+            if (usuario == null)
+            {
+                ViewBag.ErrorMessage = "No se pudieron cargar los datos del perfil.";
+                return View();
+            }
+
+            return View(usuario); // Enviar el modelo a la vista
+        }
+
+        [HttpPost]
+        public IActionResult MiPerfil(User model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model); // Retornar errores de validación
+            }
+
+            // Obtener la cédula del usuario logueado desde la sesión
+            var cedula = HttpContext.Session.GetString("CedulaUsuario");
+
+            if (string.IsNullOrEmpty(cedula))
+            {
+                return RedirectToAction("Login", "Auth"); // Redirigir si no está logueado
+            }
+
+            model.cedula = cedula; // Asegurarse de no cambiar la cédula del usuario
+
+            using (var client = _http.CreateClient())
+            {
+                var url = _conf.GetSection("Variables:UrlApi").Value + "User/UpdateUser";
+                var datos = JsonContent.Create(model);
+
+                var response = client.PutAsync(url, datos).Result;
+                var result = response.Content.ReadFromJsonAsync<Respuesta>().Result;
+
+                if (result != null && result.Codigo == 0)
+                {
+                    ViewBag.SuccessMessage = "Perfil actualizado con éxito.";
+                    return RedirectToAction("MiPerfil");
+                }
+
+                ViewBag.ErrorMessage = result?.Mensaje ?? "Hubo un error al actualizar el perfil.";
+                return View(model);
+            }
+        }
+
         // Traer un usuario por cedula
 
         [HttpGet]
@@ -202,6 +330,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string url = _conf.GetSection("Variables:UrlApi").Value + "User/QueryUser?cedula=" + cedula;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 if (string.IsNullOrEmpty(url))
                 {

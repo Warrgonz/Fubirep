@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -53,7 +52,7 @@
                         @for (int i = 0; i < Model.Count; i++)
                         {
                         <tr>
-                            <td>@(i + 1)</td> <!-- Aquí mostramos el índice incrementado -->
+                            <td>@(i + 1)</td> 
                             <td class="text-center">@Model[i].cedula</td>
                             <td>@Model[i].nombre @Model[i].primer_apellido @Model[i].segundo_apellido</td>
                             <td>@Model[i].correo</td>
@@ -68,10 +67,25 @@
                                 <a href="@Url.Action("UpdateUser","User", new { cedula = Model[i].cedula })" class="btn">
                                     <i class="fa fa-edit" style="font-size:1.6em; color: #eaaa27;"></i>
                                 </a>
-                                <a id="AbrirModal" href="#" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal"
-                                   data-consecutivo="@Model[i].cedula" data-nombre="@Model[i].nombre">
-                                    <i class="fa fa-ban" style="font-size:1.6em; color: red"></i>
-                                </a>
+
+                                @if (Model[i].activo == 1)
+                                {
+                                    <!-- Botón para Inactivar -->
+                                    <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#usuarioModal"
+                                       data-cedula="@Model[i].cedula" data-nombre="@Model[i].nombre @Model[i].primer_apellido @Model[i].segundo_apellido" data-action="inactivar">
+                                        <i class="fa fa-ban" style="font-size:1.6em; color: red"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <!-- Botón para Activar -->
+                                    <a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#usuarioModal"
+                                       data-cedula="@Model[i].cedula" data-nombre="@Model[i].nombre @Model[i].primer_apellido @Model[i].segundo_apellido" data-action="activar">
+                                        <i class="fa-solid fa-check" style="font-size:1.6em; color: green"></i>
+                                    </a>
+                                }
+
+
                             </td>
                         </tr>
                         }
@@ -81,3 +95,71 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="usuarioModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fs-5" id="staticBackdropLabel">Actualizar Estado del Usuario</h5>
+                <i class="fa-solid fa-x px-2 pt-2" data-bs-dismiss="modal" aria-label="Close"></i>
+            </div>
+            <form asp-action="ActualizarEstadoUsuario" asp-controller="User" method="post">
+                <div class="modal-body">
+                    <h5 class="text-center" id="modal-message"></h5>
+                    <p class="text-center" id="modal-description"></p>
+                    <input type="hidden" name="Cedula" id="usuario-cedula-input" />
+                    <input type="hidden" name="Accion" id="usuario-accion-input" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" id="modal-action-button" class="btn"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Selecciona el modal
+        const modal = document.getElementById("usuarioModal");
+        const modalMessage = modal.querySelector("#modal-message");
+        const modalDescription = modal.querySelector("#modal-description");
+        const modalCedulaInput = modal.querySelector("#usuario-cedula-input");
+        const modalAccionInput = modal.querySelector("#usuario-accion-input");
+        const modalActionButton = modal.querySelector("#modal-action-button");
+
+        // Escucha el clic en todos los botones con el atributo data-action
+        document.querySelectorAll('[data-bs-target="#usuarioModal"]').forEach(button => {
+            button.addEventListener("click", () => {
+                // Obtén los valores de los atributos personalizados
+                const cedula = button.getAttribute("data-cedula");
+                const nombre = button.getAttribute("data-nombre");
+                const action = button.getAttribute("data-action");
+
+                // Ajusta el contenido del modal según la acción
+                if (action === "inactivar") {
+                    modalMessage.textContent = `¿Está de acuerdo en inactivar el usuario ${nombre}, cédula ${cedula}?`;
+                    modalDescription.textContent = "El usuario no podrá iniciar sesión hasta que vuelva estar activo.";
+                    modalActionButton.textContent = "Inactivar";
+                    modalActionButton.classList.add("btn-danger");
+                    modalActionButton.classList.remove("btn-success");
+                } else if (action === "activar") {
+                    modalMessage.textContent = `¿Está de acuerdo en activar el usuario ${nombre}, cédula ${cedula}?`;
+                    modalDescription.textContent = "El usuario podrá iniciar sesión una vez esté activo.";
+                    modalActionButton.textContent = "Activar";
+                    modalActionButton.classList.add("btn-success");
+                    modalActionButton.classList.remove("btn-danger");
+                }
+
+                // Configura los inputs ocultos para el formulario
+                modalCedulaInput.value = cedula;
+                modalAccionInput.value = action;
+            });
+        });
+    });
+
+</script>
