@@ -52,7 +52,7 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 // Obtenemos los beneficiarios
-                string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
+                string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
                 var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
                 var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
@@ -156,7 +156,7 @@ namespace fubi_client.Controllers
                     var prestamo = await responsePrestamo.Content.ReadFromJsonAsync<PrestamoDetalle>();
 
                     // Obtenemos los beneficiarios
-                    string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerBeneficiarios";
+                    string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
                     var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
                     var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
@@ -296,7 +296,7 @@ namespace fubi_client.Controllers
                 string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
 
                 // Beneficiarios
-                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerPrestBeneficiarios");
                 if (responseBeneficiarios.IsSuccessStatusCode)
                 {
                     var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();
@@ -351,7 +351,7 @@ namespace fubi_client.Controllers
                 }
 
                 // Beneficiarios
-                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerBeneficiarios");
+                var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerPrestBeneficiarios");
                 if (responseBeneficiarios.IsSuccessStatusCode)
                 {
                     var resultBeneficiarios = await responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>();

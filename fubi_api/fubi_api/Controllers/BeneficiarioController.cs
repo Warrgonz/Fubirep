@@ -43,6 +43,32 @@ namespace fubi_api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("ObtenerPrestBeneficiarios")]
+        public IActionResult ConsultarPrestBeneficiarios()
+        {
+            using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
+            {
+                var respuesta = new Respuesta();
+
+                // Ejecuta el stored procedure ConsultarBeneficiarios
+                var result = context.Query<Beneficiarios>("ConsultarPrestBeneficiarios", commandType: CommandType.StoredProcedure).ToList();
+
+                if (result.Any())
+                {
+                    respuesta.Codigo = 0;
+                    respuesta.Contenido = result;
+                }
+                else
+                {
+                    respuesta.Codigo = -1;
+                    respuesta.Mensaje = "No hay beneficiarios registrados en este momento.";
+                }
+
+                return Ok(respuesta);
+            }
+        }
+
         [HttpPost]
         [Route("CreateBeneficiarios")]
         public IActionResult CreateBeneficiarios([FromBody] Beneficiarios beneficiarios)
