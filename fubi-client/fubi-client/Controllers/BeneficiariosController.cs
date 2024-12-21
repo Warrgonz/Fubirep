@@ -4,7 +4,6 @@ using fubi_client.Models;
 using System.Text.Json;
 using System.Reflection;
 using System.Net.Http.Headers;
-using fubi_client.Models;
 
 namespace fubi_client.Controllers
 {

@@ -1,0 +1,53 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <h5 class="card-title">Lista de Donaciones</h5>
+            <a href="@Url.Action("CreateDonacion", "Donacion")" class="btn btn-primary">Crear Donación</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table text-nowrap align-middle mb-0">
+                <thead>
+                    <tr class="border-2 border-bottom border-primary">
+                        <th>ID</th>
+                        <th>Donante</th>
+                        <th>Beneficiario</th>
+                        <th>Tipo de Movimiento</th>
+                        <th>Tipo de Donación</th>
+                        <th>Monto</th>
+                        <th>Inventario</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var donacion in Model)
+                    {
+                        <tr>
+                            <td>@donacion.IdDonacion</td>
+                            <td>@donacion.Donante</td>
+                            <td>@donacion.Beneficiario</td>
+                            <td>@donacion.TipoMovimiento</td>
+                            <td>@donacion.TipoDonacion</td>
+                            <td>@donacion.Monto?.ToString("C")</td>
+                            <td>@donacion.Inventario</td>
+                            <td>@donacion.Cantidad</td>
+                            <td>@donacion.Fecha.ToShortDateString()</td>
+                            <td>
+                                <form asp-action="DeleteDonacion" asp-controller="Donacion" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@donacion.IdDonacion" />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar esta donación?')">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
