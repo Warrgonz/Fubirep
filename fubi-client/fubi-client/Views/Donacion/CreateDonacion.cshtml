@@ -109,11 +109,11 @@
                     const selectedValue = tipoDonacionSelect.value;
 
                     // Lógica para mostrar u ocultar campos
-                    if (selectedValue === "4") { // Tipo de donación monetaria
+                    if (selectedValue === "1") { // Tipo de donación monetaria
                         campoMonto.style.display = "block";
                         campoCantidad.style.display = "none";
                         campoInventario.style.display = "none";
-                    } else if (selectedValue === "5") { // Tipo de donación en especie (inventario)
+                    } else if (selectedValue === "2") { // Tipo de donación en especie (inventario)
                         campoMonto.style.display = "none";
                         campoCantidad.style.display = "block";
                         campoInventario.style.display = "block";

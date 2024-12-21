@@ -6,13 +6,13 @@ namespace fubi_client.Models
     {
         [JsonPropertyName("Id_Donacion")]
         public int IdDonacion { get; set; }
-        public string TipoMovimiento { get; set; } // Nombre del tipo de movimiento
+        public string TipoMovimiento { get; set; } 
         [JsonPropertyName("Tipo_Donacion")]
-        public string TipoDonacion { get; set; }  // Nombre del tipo de donación
+        public string TipoDonacion { get; set; }  
         public string Donante { get; set; }
-        public string Beneficiario { get; set; }  // Nombre del beneficiario
+        public string Beneficiario { get; set; }  
         public decimal? Monto { get; set; }
-        public string Inventario { get; set; }    // Nombre del inventario
+        public string Inventario { get; set; }    
         public int? Cantidad { get; set; }
         public DateTime Fecha { get; set; }
     }
