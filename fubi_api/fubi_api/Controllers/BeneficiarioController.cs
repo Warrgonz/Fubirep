@@ -26,7 +26,7 @@ namespace fubi_api.Controllers
 
 
         [HttpGet]
-        [Route("ObtenerPrestBeneficiarios")]
+        [Route("ObtenerBeneficiarios")]
         public IActionResult ConsultarBeneficiarios()
         {
             using (var context = new SqlConnection(_conf.GetSection("ConnectionStrings:DefaultConnection").Value))
@@ -34,7 +34,7 @@ namespace fubi_api.Controllers
                 var respuesta = new Respuesta();
 
                 // Ejecuta el stored procedure ConsultarBeneficiarios
-                var result = context.Query<Beneficiarios>("ConsultarPrestBeneficiarios", commandType: CommandType.StoredProcedure).ToList();
+                var result = context.Query<Beneficiarios>("ConsultarBeneficiarios", commandType: CommandType.StoredProcedure).ToList();
 
                 if (result.Any())
                 {
