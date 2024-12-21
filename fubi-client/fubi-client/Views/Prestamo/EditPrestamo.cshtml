@@ -23,8 +23,8 @@
             <option value="">Seleccione un beneficiario</option>
             @foreach (var beneficiario in ViewBag.Beneficiarios)
             {
-                <option value="@beneficiario.id_beneficiario" selected="@(Model.BeneficiaryName == beneficiario.nombre)">
-                    @beneficiario.nombre
+                <option value="@beneficiario.id_beneficiario" selected="@(Model.BeneficiaryName == beneficiario.beneficiario)">
+                    @beneficiario.beneficiario
                 </option>
             }
         </select>
