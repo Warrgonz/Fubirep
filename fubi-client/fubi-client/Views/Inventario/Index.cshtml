@@ -21,7 +21,6 @@
                         <th>Descripción</th>
                         <th>Cantidad</th>
                         <th>Cantidad Prestada</th>
-                        <th>Imagen</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -34,9 +33,6 @@
                             <td>@Model[i].descripcion</td>
                             <td>@Model[i].cantidad</td>
                             <td>@Model[i].cantidad_prestada</td>
-                            <td class="d-flex justify-content-center align-items-center">
-                                <img src="@Model[i].ruta_imagen" width="80px" alt="Imagen del inventario" />
-                            </td>
                             <td>
                                 <a href="@Url.Action("EditInventario", "Inventario", new { id = Model[i].id_inventario })" class="btn btn-primary btn-sm">Editar</a>
                                 <form asp-action="DeleteInventario" asp-controller="Inventario" method="post" class="d-inline">

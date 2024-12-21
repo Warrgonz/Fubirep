@@ -28,6 +28,8 @@ namespace fubi_client.Controllers
                 // La URL de la API para obtener los préstamos
                 string url = _conf.GetSection("Variables:UrlApi").Value + "Prestamos/ObtenerPrestamos";
 
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                 // Realizamos la solicitud GET al endpoint
                 var response = client.GetAsync(url).Result;
 
@@ -54,9 +56,10 @@ namespace fubi_client.Controllers
             {
                 // Obtenemos los beneficiarios
                 string urlBeneficiarios = _conf.GetSection("Variables:UrlApi").Value + "Beneficiarios/ObtenerPrestBeneficiarios";
-                var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
 
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
+                var responseBeneficiarios = client.GetAsync(urlBeneficiarios).Result;
 
                 var resultBeneficiarios = responseBeneficiarios.Content.ReadFromJsonAsync<Respuesta>().Result;
 
@@ -99,7 +102,6 @@ namespace fubi_client.Controllers
 
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> CreatePrestamo(Prestamo model)
         {
             using (var client = _http.CreateClient())
@@ -111,6 +113,9 @@ namespace fubi_client.Controllers
                     model.id_encargado = int.Parse(HttpContext.Session.GetString("id_usuario"));
                     // Serializar y enviar el modelo
                     var prestamoContent = JsonContent.Create(model);
+
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                     var response = await client.PostAsync(url, prestamoContent);
 
                     // Si el API responde exitosamente
@@ -150,6 +155,8 @@ namespace fubi_client.Controllers
 
                 try
                 {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                     // Obtener el préstamo específico
                     var responsePrestamo = await client.GetAsync($"{apiUrl}Prestamos/ObtenerPrestamo/{id}");
                     if (!responsePrestamo.IsSuccessStatusCode)
@@ -216,6 +223,8 @@ namespace fubi_client.Controllers
 
                 try
                 {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                     // Transformar PrestamoDetalle a Prestamo
                     var prestamo = new Prestamo
                     {
@@ -271,6 +280,8 @@ namespace fubi_client.Controllers
 
                 try
                 {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
+
                     var response = await client.DeleteAsync(url);
 
                     if (response.IsSuccessStatusCode)
@@ -298,6 +309,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 // Beneficiarios
                 var responseBeneficiarios = await client.GetAsync($"{apiUrl}Beneficiarios/ObtenerPrestBeneficiarios");
@@ -342,6 +355,8 @@ namespace fubi_client.Controllers
             using (var client = _http.CreateClient())
             {
                 string apiUrl = _conf.GetSection("Variables:UrlApi").Value;
+
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", HttpContext.Session.GetString("TokenUsuario"));
 
                 // Obtener el préstamo actual
                 var responsePrestamo = await client.GetAsync($"{apiUrl}Prestamos/ObtenerPrestamo/{loanId}");

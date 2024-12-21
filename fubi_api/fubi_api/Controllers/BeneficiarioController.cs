@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace fubi_api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("/api/[controller]")]
     [ApiController]
     public class BeneficiariosController : ControllerBase
