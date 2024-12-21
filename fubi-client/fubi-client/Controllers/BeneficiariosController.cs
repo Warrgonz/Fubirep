@@ -46,21 +46,31 @@ namespace fubi_client.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Leer la respuesta como un objeto de tipo Respuesta
                     var apiResponse = await response.Content.ReadFromJsonAsync<Respuesta>();
 
                     if (apiResponse != null && apiResponse.Codigo == 0)
                     {
-                        // Deserializar la lista de beneficiarios
-                        var beneficiarios = apiResponse.Contenido as List<Beneficiarios>;
+                        try
+                        {
+                            // Deserializar directamente el contenido de la respuesta como una lista de Beneficiarios
+                            var beneficiarios = JsonSerializer.Deserialize<List<Beneficiarios>>(apiResponse.Contenido.ToString());
 
-                        // Verifica que la lista no sea nula
-                        if (beneficiarios != null && beneficiarios.Any())
-                        {
-                            return View(beneficiarios);
+                            // Verificar si la lista contiene datos
+                            if (beneficiarios != null && beneficiarios.Any())
+                            {
+                                return View(beneficiarios);
+                            }
+                            else
+                            {
+                                TempData["ErrorMessage"] = "No hay beneficiarios registrados en este momento.";
+                                return View(new List<Beneficiarios>());
+                            }
                         }
-                        else
+                        catch (JsonException ex)
                         {
-                            TempData["ErrorMessage"] = "No hay beneficiarios registrados en este momento.";
+                            // Capturar errores de deserialización
+                            TempData["ErrorMessage"] = $"Error al procesar los datos de los beneficiarios: {ex.Message}";
                             return View(new List<Beneficiarios>());
                         }
                     }
@@ -77,6 +87,8 @@ namespace fubi_client.Controllers
                 }
             }
         }
+
+
 
 
         // GET: Formulario para agregar beneficiarios

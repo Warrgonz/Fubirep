@@ -23,17 +23,6 @@
         <label class="form-label">Cantidad Disponible</label>
         <input type="number" asp-for="cantidad" class="form-control" />
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">Cantidad Prestada</label>
-        <input type="number" asp-for="cantidad_prestada" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Ruta de Imagen</label>
-        <input type="text" asp-for="ruta_imagen" class="form-control" />
-    </div>
-
     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
     <a href="@Url.Action("Index", "Inventario")" class="btn btn-secondary">Cancelar</a>
 </form>
